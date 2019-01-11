@@ -1,39 +1,34 @@
 #!/usr/bin/env node
 
-const { transpile } = require('.')
-const findRoot = require('find-root')
-const fs = require('fs')
-const minimist = require('minimist')
-const path = require('path')
-const pack = require('./package.json')
+const { transpile } = require(".");
+const findRoot = require("find-root");
+const fs = require("fs");
+const minimist = require("minimist");
+const path = require("path");
+const pack = require("./package.json");
 
-const root = findRoot(process.cwd())
+const root = findRoot(process.cwd());
 
-let {
-  input,
-  output,
-  source,
-  config,
-  prefetch,
-  help,
-  version,
-} = minimist(process.argv.slice(2), {
-  string: ['output', 'input', 'source', 'config'],
-  boolean: ['prefetch', 'help'],
-  alias: {
-    in: 'input',
-    out: 'output',
-    src: 'source',
-    cfg: 'config',
-  },
-  default: {
-    prefetch: false,
-    help: false,
-    input: `${root}/.appfairy`,
-    output: root,
-    source: '',
-  },
-})
+let { input, output, source, config, prefetch, help, version } = minimist(
+  process.argv.slice(2),
+  {
+    string: ["output", "input", "source", "config"],
+    boolean: ["prefetch", "help"],
+    alias: {
+      in: "input",
+      out: "output",
+      src: "source",
+      cfg: "config"
+    },
+    default: {
+      prefetch: false,
+      help: false,
+      input: `${root}/.appfairy`,
+      output: root,
+      source: ""
+    }
+  }
+);
 
 if (help) {
   console.log(`
@@ -110,27 +105,26 @@ The CLI tool supports the following options:
 
 The behavior of Appfairy will change according to the specified options as detailed above,
 and the rest is self explanatory.
-`)
+`);
 
-  process.exit(0)
+  process.exit(0);
 }
 
 if (version) {
-  console.log(`appfairy version ${pack.version}`)
+  console.log(`appfairy version ${pack.version}`);
 
-  process.exit(0)
+  process.exit(0);
 }
 
 if (config) {
-  config = path.resolve(process.cwd(), config)
-}
-else try {
-  fs.statSync(`${root}/af_config.js`)
-  config = `${root}/af_config.js`
-}
-catch (e) {
-  // File in default path not exist
-}
+  config = path.resolve(process.cwd(), config);
+} else
+  try {
+    fs.statSync(`${root}/af_config.js`);
+    config = `${root}/af_config.js`;
+  } catch (e) {
+    // File in default path not exist
+  }
 
 const configBase = {
   input,
@@ -138,81 +132,85 @@ const configBase = {
   source,
   prefetch,
   // Preserve original path
-  __dirname: path.dirname(config || root),
-}
+  __dirname: path.dirname(config || root)
+};
 
 if (config) {
   // Will throw an error if file not exist
-  config = Object.assign(configBase, require(config))
-}
-else {
-  config = configBase
+  config = Object.assign(configBase, require(config));
+} else {
+  config = configBase;
 }
 
 // Validate config.output schema
-if (typeof config.prefetch != 'boolean') {
-  throw TypeError('config.prefetch must be a boolean')
+if (typeof config.prefetch != "boolean") {
+  throw TypeError("config.prefetch must be a boolean");
 }
-if (typeof config.input != 'string') {
-  throw TypeError('config.input must be a string')
+if (typeof config.input != "string") {
+  throw TypeError("config.input must be a string");
 }
-if (typeof config.output == 'string') {
+if (typeof config.output == "string") {
   config.output = {
     public: `${config.output}/public`,
-    src: `${config.output}/src`,
-  }
+    src: `${config.output}/src`
+  };
 }
-if (typeof config.output != 'object') {
-  throw TypeError('config.output must be an object')
+if (typeof config.output != "object") {
+  throw TypeError("config.output must be an object");
 }
-if (typeof config.output.public != 'string') {
-  throw TypeError('config.output.public must be a string')
+if (typeof config.output.public != "string") {
+  throw TypeError("config.output.public must be a string");
 }
-if (typeof config.output.src == 'string') {
+if (typeof config.output.src == "string") {
   config.output.src = {
     scripts: `${config.output.src}/scripts`,
     styles: `${config.output.src}/styles`,
     views: `${config.output.src}/views`,
-    controllers: `${config.output.src}/controllers`,
-  }
+    components: `${config.output.src}/components`,
+    controllers: `${config.output.src}/controllers`
+  };
 }
-if (typeof config.output.src != 'object') {
-  throw TypeError('config.output.src must be an object or a string')
+if (typeof config.output.src != "object") {
+  throw TypeError("config.output.src must be an object or a string");
 }
-if (typeof config.output.src != 'object') {
-  throw TypeError('config.output.src must be an object')
+if (typeof config.output.src != "object") {
+  throw TypeError("config.output.src must be an object");
 }
-if (typeof config.output.src.scripts != 'string') {
-  throw TypeError('config.output.src.scripts must be a string')
+if (typeof config.output.src.scripts != "string") {
+  throw TypeError("config.output.src.scripts must be a string");
 }
-if (typeof config.output.src.styles != 'string') {
-  throw TypeError('config.output.src.styles must be a string')
+if (typeof config.output.src.styles != "string") {
+  throw TypeError("config.output.src.styles must be a string");
 }
-if (typeof config.output.src.views != 'string') {
-  throw TypeError('config.output.src.views must be a string')
+if (typeof config.output.src.views != "string") {
+  throw TypeError("config.output.src.views must be a string");
 }
-if (typeof config.output.src.controllers != 'string') {
-  throw TypeError('config.output.src.controllers must be a string')
+if (typeof config.output.src.components != "string") {
+  throw TypeError("config.output.src.components must be a string");
 }
-if (typeof config.source != 'string') {
-  throw TypeError('config.source must be a string')
+if (typeof config.output.src.controllers != "string") {
+  throw TypeError("config.output.src.controllers must be a string");
+}
+if (typeof config.source != "string") {
+  throw TypeError("config.source must be a string");
 }
 
-config.input = path.resolve(config.__dirname, config.input)
+config.input = path.resolve(config.__dirname, config.input);
 config.output = {
   public: path.resolve(config.__dirname, config.output.public),
   src: {
     scripts: path.resolve(config.__dirname, config.output.src.scripts),
     styles: path.resolve(config.__dirname, config.output.src.styles),
     views: path.resolve(config.__dirname, config.output.src.views),
-    controllers: path.resolve(config.__dirname, config.output.src.controllers),
+    components: path.resolve(config.__dirname, config.output.src.components),
+    controllers: path.resolve(config.__dirname, config.output.src.controllers)
   }
-}
+};
 
-transpile(config).catch((errs) => {
-  errs = [].concat(errs)
+transpile(config).catch(errs => {
+  errs = [].concat(errs);
 
-  errs.forEach((err) => {
-    console.error(err)
-  })
-})
+  errs.forEach(err => {
+    console.error(err);
+  });
+});

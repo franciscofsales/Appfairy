@@ -30,7 +30,7 @@ export const add = async (files) => {
 // Will commit changes, and if files not exist, will print status
 export const commit = (files, message, stdio = 'inherit') => {
   if (files && files.length) try {
-    return execa('git', ['commit', '-m', `appfairy: ${message}`], {
+    return execa('git', ['commit', '-m', `update: ${message}`], {
       stdio,
     })
   }
@@ -56,7 +56,7 @@ export const removeAppfairyFiles = async () => {
   }
 
   let { stderr, stdout: hash } = await execa('git', [
-    'log', '-1', '--format=%H', `--grep=appfairy: Migrate`
+    'log', '-1', '--format=%H', `--grep=appfairy: Update design`
   ])
 
   // Probably git is not initialized
