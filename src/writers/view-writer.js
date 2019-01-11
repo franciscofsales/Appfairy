@@ -52,10 +52,10 @@ import { Route } from 'react-router-dom';
 import * as Views from './views';
 
 export default () => [
-  <Route path={["/", "/index", "/index.html"]} component={Views.IndexView} exact />,
+  <Route path="/" component={Views.IndexView} exact />,
   ${viewWriters
     .map(
-      viewWriter => `<Route path={["/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}", "/${viewWriter.className.replace(/view/gi, '').toLowerCase()}.html"]} component={Views.${viewWriter.className}} exact />`
+      viewWriter => `<Route path="/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`
     )
     .join(",\n  ")}
 ]`;
@@ -69,18 +69,19 @@ export default () => [
       .join("\n");
 
 
+    viewWriters = flattenChildren(viewWriters);
 
-    const writingViews = viewWriters.map(async viewWriter => {
+    for(const viewWriter of viewWriters) {
       const filePaths = await viewWriter.write(dir, componentDir, stylesDir, ctrlsDir);
       childFilePaths.push(...filePaths);
-    });
-    viewWriters = flattenChildren(viewWriters);
+    }
+
 
     const writtingRoutes = fs.writeFile(routesFilePath, freeLint(routes));
     const writingIndex = fs.writeFile(indexFilePath, freeLint(index));
     const writingHelpers = fs.writeFile(helpersFilePath, raw.viewHelpers);
 
-    await Promise.all([...writingViews, writingIndex, writingHelpers, writtingRoutes]);
+    await Promise.all([writingIndex, writingHelpers, writtingRoutes]);
     return childFilePaths;
   }
 
@@ -142,10 +143,6 @@ export default () => [
       return;
     }
 
-    // if(this[_].className === 'IndexView'){
-    //   console.log(html)
-    // }
-
     const children = (this[_].children = []);
     const $ = cheerio.load(html);
 
@@ -153,7 +150,7 @@ export default () => [
     $("style").each((i, el) => {
       const $el = $(el);
       const html = $el.html();
-      const css = encapsulateCSS(html, this.srouce);
+      const css = encapsulateCSS(html, this.source);
 
       $el.html(css);
     });
@@ -331,15 +328,23 @@ export default () => [
       childFilePaths.push(...filePaths);
     });
     const isNestedComponent = dir === componentDir;
-    const writingSelf = fs.writeFile(
-          `${dir}/${this.className}.js`,
-          this[_].compose(
-            path.relative(dir, componentDir),
-            path.relative(dir, stylesDir),
-            ctrlsDir,
-            !isNestedComponent
-          )
+    let writingSelf
+    try {
+      await fs.readFile(`${dir}/${this.className}.js`);
+    } catch(e) {
+      // pass
+      writingSelf = fs.writeFile(
+        `${dir}/${this.className}.js`,
+        this[_].compose(
+          path.relative(dir, componentDir),
+          path.relative(dir, stylesDir),
+          ctrlsDir,
+          !isNestedComponent
         )
+      )
+    }
+
+
     try {
       await Promise.all([...writingChildren, writingSelf]);
     } catch(e) {

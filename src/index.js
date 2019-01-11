@@ -62,6 +62,7 @@ export const transpile = async config => {
     return transpileHTMLFile(config, htmlFile, scriptWriter, styleWriter);
   });
   const viewWriters = await Promise.all(transpilingHTMLFiles);
+
   const writingFiles = Promise.all([
     ViewWriter.writeAll(
       viewWriters,
@@ -114,6 +115,7 @@ const transpileHTMLFile = async (
     baseUrl: config.baseUrl,
     source: config.source
   });
+
 
   // setScripts(scriptWriter, $head, $)
 
@@ -192,9 +194,6 @@ const setStyles = (viewWriter, styleWriter, $head, _, stylesDir) => {
 const setHTML = (viewWriter, $body, $) => {
   // Create a wrap around $body so we can inherit its style without actually
   // using a <body> tag
-  if(viewWriter.className === 'IndexView') {
-   console.log($body)
-  }
   const $div = $("<div>");
   $div.html($body.html());
   $div.attr($body.attr());
