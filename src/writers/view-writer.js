@@ -34,7 +34,7 @@ const flattenChildren = (children = [], flatten = []) => {
   return flatten;
 };
 
-const removeHtmlFromLinks = (html) => html.replace('index.html', '/').replace(/\.html/ig, '')
+const removeHtmlFromLinks = (html) => html.replace('index.html', '').replace(/\.html/ig, '')
 
 @Internal(_)
 class ViewWriter extends Writer {
@@ -68,10 +68,7 @@ export default () => [
   <Route path="/" component={Views.IndexView} exact />,
   ${viewWriters
     .map(
-      viewWriter => {
-        // console.log(viewWriter.className);
-        return (`<Route path="/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`)
-      }
+      viewWriter => `<Route path="${viewWriter.parent ? `/${viewWriter.parent}` : ''}/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`
     )
     .join(",\n  ")}
 ]`;
@@ -349,7 +346,7 @@ export default () => [
     const filePath = `${dir}/${this.className}.js`;
     const childFilePaths = [filePath];
     const writingChildren = this[_].children.map(async child => {
-      const filePaths = await child.write(componentDir, componentDir, stylesDir, ctrlsDir);
+      const filePaths = await child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
       childFilePaths.push(...filePaths);
     });
     const isNestedComponent = dir === componentDir;

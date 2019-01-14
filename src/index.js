@@ -62,7 +62,6 @@ export const transpile = async config => {
     return transpileHTMLFile(config, htmlFile, scriptWriter, styleWriter);
   });
   const viewWriters = await Promise.all(transpilingHTMLFiles);
-
   const writingFiles = Promise.all([
     ViewWriter.writeAll(
       viewWriters,

@@ -170,7 +170,6 @@ const transpile = (() => {
       return transpileHTMLFile(config, htmlFile, scriptWriter, styleWriter);
     });
     const viewWriters = yield Promise.all(transpilingHTMLFiles);
-
     const writingFiles = Promise.all([_writers__WEBPACK_IMPORTED_MODULE_5__["ViewWriter"].writeAll(viewWriters, config.output.src.views, config.output.src.components, config.output.src.meta, config.output.src.styles, config.output.src.controllers).then(function (paths) {
       return outputFiles.push(...paths);
     }),
@@ -930,7 +929,7 @@ const flattenChildren = (children = [], flatten = []) => {
   return flatten;
 };
 
-const removeHtmlFromLinks = html => html.replace('index.html', '/').replace(/\.html/ig, '');
+const removeHtmlFromLinks = html => html.replace('index.html', '').replace(/\.html/ig, '');
 
 let ViewWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["Internal"])(_), _dec(_class = class ViewWriter extends _writer__WEBPACK_IMPORTED_MODULE_10__["default"] {
   static writeAll(viewWriters, dir, componentDir, metaDir, stylesDir, ctrlsDir) {
@@ -958,8 +957,7 @@ import * as Views from './views';
 export default () => [
   <Route path="/" component={Views.IndexView} exact />,
   ${viewWriters.map(function (viewWriter) {
-        // console.log(viewWriter.className);
-        return `<Route path="/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`;
+        return `<Route path="${viewWriter.parent ? `/${viewWriter.parent}` : ''}/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`;
       }).join(",\n  ")}
 ]`;
 
@@ -1208,7 +1206,7 @@ export default () => [
       const childFilePaths = [filePath];
       const writingChildren = _this[_].children.map((() => {
         var _ref = _asyncToGenerator(function* (child) {
-          const filePaths = yield child.write(componentDir, componentDir, stylesDir, ctrlsDir);
+          const filePaths = yield child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
           childFilePaths.push(...filePaths);
         });
 
