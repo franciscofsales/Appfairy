@@ -59,7 +59,6 @@ class ViewWriter extends Writer {
     const routesFilePath = `${dir}/../routes.js`;
     const childFilePaths = [indexFilePath, helpersFilePath, routesFilePath];
     ctrlsDir = path.relative(dir, ctrlsDir);
-
     const routes = `
 import React from 'react';
 import { Route } from 'react-router-dom';
@@ -69,7 +68,10 @@ export default () => [
   <Route path="/" component={Views.IndexView} exact />,
   ${viewWriters
     .map(
-      viewWriter => `<Route path="/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`
+      viewWriter => {
+        // console.log(viewWriter.className);
+        return (`<Route path="/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`)
+      }
     )
     .join(",\n  ")}
 ]`;
@@ -338,6 +340,7 @@ export default () => [
     this[_].styles = options.styles || [];
 
     this.name = options.name;
+    this.parent = options.parent;
     this.html = options.html;
     this.source = options.source;
   }

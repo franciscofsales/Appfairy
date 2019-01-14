@@ -114,6 +114,7 @@ const transpileHTMLFile = async (
       .slice(0, -1)
       .join("."),
     baseUrl: config.baseUrl,
+    parent: htmlFile.split('/')[0] === htmlFile ? null : htmlFile.split('/')[0],
     source: config.source
   });
 
