@@ -1559,9 +1559,8 @@ export default (req, res) => {
     data = data.replace('<html>', '<html '+ html + '>');
     data = data.replace(/<title>.*?<\\/title>/g, title);
     data = data.replace('</head>', meta +
+        '<link rel="stylesheet" href="/css/webflow.css" />' ++
         '<link rel="stylesheet" href="/css/amli.webflow.css" />' +
-        '<link rel="stylesheet" href="/css/webflow.css" />' +
-        '<link rel="stylesheet" href="/css/normalize.css" />' +
     '</head>');
     data = data.replace(
       '<div id="root"></div>',
