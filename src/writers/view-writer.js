@@ -3,6 +3,9 @@ import HTMLtoJSX from "htmltojsx";
 import path from "path";
 import statuses from "statuses";
 import uglify from "uglify-js";
+import ServerIndex from '../static/server';
+import ServerLoader from '../static/server/loader';
+import ServerServer from '../static/server/server';
 import { fs, mkdirp } from "../libs";
 import raw from "../raw";
 import Writer from "./writer";
@@ -35,10 +38,21 @@ const removeHtmlFromLinks = (html) => html.replace('index.html', '/').replace(/\
 
 @Internal(_)
 class ViewWriter extends Writer {
-  static async writeAll(viewWriters, dir, componentDir, stylesDir, ctrlsDir) {
+  static async writeAll(viewWriters, dir, componentDir, metaDir, stylesDir, ctrlsDir) {
     await mkdirp(dir);
     await mkdirp(componentDir);
     await mkdirp(stylesDir);
+    await mkdirp(metaDir);
+    await mkdirp(`${dir}/../../server`);
+
+    const serverPromises = [
+      fs.writeFile(`${dir}/../../server/index.js`, freeLint(ServerIndex)),
+      fs.writeFile(`${dir}/../../server/server.js`, freeLint(ServerServer)),
+      fs.writeFile(`${dir}/../../server/loader.js`, freeLint(ServerLoader))
+    ]
+
+    await Promise.all(serverPromises);
+
 
     const indexFilePath = `${dir}/index.js`;
     const helpersFilePath = `${dir}/../helpers.js`;
@@ -72,7 +86,7 @@ export default () => [
     viewWriters = flattenChildren(viewWriters);
 
     for(const viewWriter of viewWriters) {
-      const filePaths = await viewWriter.write(dir, componentDir, stylesDir, ctrlsDir);
+      const filePaths = await viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
       childFilePaths.push(...filePaths);
     }
 
@@ -108,6 +122,10 @@ export default () => [
         .concat("controller")
         .map(upperFirst)
         .join(""),
+      metaClassName: words
+        .concat("meta")
+        .map(upperFirst)
+        .join(""),
       className: words
         .concat("view")
         .map(upperFirst)
@@ -126,6 +144,10 @@ export default () => [
 
   get ctrlClassName() {
     return this[_].ctrlClassName;
+  }
+
+  get metaClassName() {
+    return this[_].metaClassName;
   }
 
   get className() {
@@ -320,7 +342,7 @@ export default () => [
     this.source = options.source;
   }
 
-  async write(dir, componentDir, stylesDir, ctrlsDir) {
+  async write(dir, componentDir, metaDir, stylesDir, ctrlsDir) {
     const filePath = `${dir}/${this.className}.js`;
     const childFilePaths = [filePath];
     const writingChildren = this[_].children.map(async child => {
@@ -337,6 +359,7 @@ export default () => [
         `${dir}/${this.className}.js`,
         this[_].compose(
           path.relative(dir, componentDir),
+          path.relative(dir, metaDir),
           path.relative(dir, stylesDir),
           ctrlsDir,
           !isNestedComponent
@@ -402,7 +425,7 @@ export default () => [
     }
   }
 
-  _compose(compDir, stylesDir, ctrlsDir, shouldHaveStyles = true) {
+  _compose(compDir, metaDir, stylesDir, ctrlsDir, shouldHaveStyles = true) {
     return freeLint(`
       import React from 'react'
       import { createScope, map, transformProxies } from '../helpers'
@@ -439,8 +462,18 @@ export default () => [
             ==>${this[_].composeProxiesDefault()}<==
           }
 
+          let renderMeta
+          try {
+            renderMeta = require("${metaDir}/${this.metaClassName}")
+            renderMeta = renderMeta.default || renderMeta
+          } catch (e) {
+            // pass
+            renderMeta = () => null;
+          }
+
           return (
             <span>
+              {renderMeta()}
               ==>${this.jsx}<==
             </span>
           )
