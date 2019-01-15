@@ -250,7 +250,9 @@ const makePublicDir = (() => {
         if (path__WEBPACK_IMPORTED_MODULE_1___default.a.extname(relativePath) != ".css") return;
 
         let css = (yield _libs__WEBPACK_IMPORTED_MODULE_3__["fs"].readFile(relativePath)).toString();
-        css = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["encapsulateCSS"])(css, config.source);
+        if (relativePath.split('/')[relativePath.split('/').length - 1] !== 'normalize.css') {
+          css = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["encapsulateCSS"])(css, config.source);
+        }
         yield _libs__WEBPACK_IMPORTED_MODULE_3__["fs"].writeFile(relativePath, css);
       });
 
@@ -1559,8 +1561,9 @@ export default (req, res) => {
     data = data.replace('<html>', '<html '+ html + '>');
     data = data.replace(/<title>.*?<\\/title>/g, title);
     data = data.replace('</head>', meta +
-        '<link rel="stylesheet" href="/css/webflow.css" />' ++
+        '<link rel="stylesheet" href="/css/webflow.css" />' +
         '<link rel="stylesheet" href="/css/amli.webflow.css" />' +
+        '<link rel="stylesheet" href="/css/normalize.css" />' +
     '</head>');
     data = data.replace(
       '<div id="root"></div>',
@@ -1602,11 +1605,13 @@ export default (req, res) => {
       */
       frontloadServerRender(() =>
         renderToString(
-              <StaticRouter location={req.url} context={context}>
-                <Frontload isServer={true}>
-                  <App />
-                </Frontload>
-              </StaticRouter>
+          <Loadable.Capture report={m => modules.push(m)}>
+            <StaticRouter location={req.url} context={context}>
+              <Frontload isServer={true}>
+                <App />
+              </Frontload>
+            </StaticRouter>
+          </Loadable.Capture>
         )
       ).then(routeMarkup => {
         if (context.url) {

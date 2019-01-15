@@ -152,7 +152,9 @@ const makePublicDir = async (config, publicSubDirs) => {
       if (path.extname(relativePath) != ".css") return;
 
       let css = (await fs.readFile(relativePath)).toString();
-      css = encapsulateCSS(css, config.source);
+      if (relativePath.split('/')[relativePath.split('/').length-1] !== 'normalize.css') {
+        css = encapsulateCSS(css, config.source);
+      }
       await fs.writeFile(relativePath, css);
     })
   );
