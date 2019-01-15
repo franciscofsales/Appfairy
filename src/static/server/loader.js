@@ -71,11 +71,13 @@ export default (req, res) => {
       */
       frontloadServerRender(() =>
         renderToString(
-              <StaticRouter location={req.url} context={context}>
-                <Frontload isServer={true}>
-                  <App />
-                </Frontload>
-              </StaticRouter>
+          <Loadable.Capture report={m => modules.push(m)}>
+            <StaticRouter location={req.url} context={context}>
+              <Frontload isServer={true}>
+                <App />
+              </Frontload>
+            </StaticRouter>
+          </Loadable.Capture>
         )
       ).then(routeMarkup => {
         if (context.url) {
