@@ -212,6 +212,7 @@ const transpileHTMLFile = (() => {
       name: htmlFile.split('/')[htmlFile.split('/').length - 1].split(".").slice(0, -1).join("."),
       baseUrl: config.baseUrl,
       parent: htmlFile.split('/')[0] === htmlFile ? null : htmlFile.split('/')[0],
+      isComponent: false,
       source: config.source
     });
 
@@ -916,6 +917,8 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 
 
+const writingFiles = [];
+
 
 
 const _ = Symbol("_ViewWriter");
@@ -962,17 +965,30 @@ export default () => [
         return `<Route path="${viewWriter.parent ? `/${viewWriter.parent}` : ''}/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`;
       }).join(",\n  ")}
 ]`;
-
       const index = viewWriters.map(function (viewWriter) {
         return `export { default as ${viewWriter.className} } from './${viewWriter.className}'`;
       }).join("\n");
 
       viewWriters = flattenChildren(viewWriters);
-
+      const leanViewWriters = [];
       for (const viewWriter of viewWriters) {
-        const filePaths = yield viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
-        childFilePaths.push(...filePaths);
+        if (!leanViewWriters.find(function (vw) {
+          return vw.className === viewWriter.className;
+        })) {
+          leanViewWriters.push(viewWriter);
+        }
       }
+
+      leanViewWriters.forEach((() => {
+        var _ref = _asyncToGenerator(function* (viewWriter) {
+          const filePaths = yield viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
+          childFilePaths.push(...filePaths);
+        });
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      })());
 
       const writtingRoutes = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(routesFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(routes));
       const writingIndex = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(indexFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(index));
@@ -989,6 +1005,14 @@ export default () => [
 
   set baseUrl(baseUrl) {
     this[_].baseUrl = String(baseUrl);
+  }
+
+  set isComponent(comp) {
+    this[_].isComponent = comp;
+  }
+
+  get isComponent() {
+    return this[_].isComponent;
   }
 
   get children() {
@@ -1087,7 +1111,8 @@ export default () => [
         name: elName,
         html: $.html($el),
         baseUrl: this.baseUrl,
-        styles: this.styles
+        styles: this.styles,
+        isComponent: true
       });
 
       children.push(child);
@@ -1157,7 +1182,7 @@ export default () => [
     // Transforming HTML into JSX
     let jsx = htmltojsx.convert(removeHtmlFromLinks(html)).trim();
     // Bind controller to view
-    this[_].jsx = bindJSX(jsx, children);
+    this[_].jsx = bindJSX(this[_], jsx, children);
   }
 
   get scripts() {
@@ -1196,6 +1221,7 @@ export default () => [
 
     this.name = options.name;
     this.parent = options.parent;
+    this.isComponent = options.isComponent;
     this.html = options.html;
     this.source = options.source;
   }
@@ -1207,13 +1233,16 @@ export default () => [
       const filePath = `${dir}/${_this.className}.js`;
       const childFilePaths = [filePath];
       const writingChildren = _this[_].children.map((() => {
-        var _ref = _asyncToGenerator(function* (child) {
-          const filePaths = yield child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
-          childFilePaths.push(...filePaths);
+        var _ref2 = _asyncToGenerator(function* (child) {
+          if (!writingFiles.includes(child.className)) {
+            writingFiles.push(child.className);
+            const filePaths = yield child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
+            childFilePaths.push(...filePaths);
+          }
         });
 
-        return function (_x) {
-          return _ref.apply(this, arguments);
+        return function (_x2) {
+          return _ref2.apply(this, arguments);
         };
       })());
       const isNestedComponent = dir === componentDir;
@@ -1318,6 +1347,7 @@ export default () => [
             ==>${this[_].composeProxiesDefault()}<==
           }
 
+          ${this[_].isComponent ? '' : `
           let renderMeta
           try {
             renderMeta = require("${metaDir}/${this.metaClassName}")
@@ -1325,11 +1355,12 @@ export default () => [
           } catch (e) {
             // pass
             renderMeta = () => null;
-          }
+          }`}
+
 
           return (
             <span>
-              {renderMeta()}
+              ${this[_].isComponent ? '{renderMeta()}' : ''}
               ==>${this.jsx}<==
             </span>
           )
@@ -1422,9 +1453,16 @@ export default () => [
 }) || _class);
 
 
-function bindJSX(jsx, children = []) {
-  children.forEach(child => {
-    jsx = jsx.replace(new RegExp(`af-${child.elName}`, "g"), `${child.className}.Controller`);
+function bindJSX(self, jsx, children = []) {
+  // DETECT LIST
+  children.forEach((child, index) => {
+    const isList = new RegExp(`(<af-${child.elName} />\\s*)+`, "").exec(jsx);
+    if (isList) {
+      self.sockets.push(`${child.className}List${index}`);
+      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, ""), `{map(proxies['${child.className}List${index}'], props => <div ${mergeProps('')}>{props.children ? props.children : null}</div>)}`);
+    } else {
+      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !self.isComponent ? "g" : ""), !self.isComponent ? `<${child.className}.Controller />` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
+    }
   });
 
   // ORDER MATTERS

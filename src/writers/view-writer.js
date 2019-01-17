@@ -10,6 +10,8 @@ import { fs, mkdirp } from "../libs";
 import raw from "../raw";
 import Writer from "./writer";
 
+const writingFiles = []
+
 import {
   encapsulateCSS,
   escape,
@@ -72,7 +74,6 @@ export default () => [
     )
     .join(",\n  ")}
 ]`;
-
     const index = viewWriters
       .map(viewWriter => {
         return `export { default as ${viewWriter.className} } from './${
@@ -81,13 +82,18 @@ export default () => [
       })
       .join("\n");
 
-
     viewWriters = flattenChildren(viewWriters);
-
+    const leanViewWriters = []
     for(const viewWriter of viewWriters) {
+      if(!leanViewWriters.find(vw => vw.className === viewWriter.className)) {
+        leanViewWriters.push(viewWriter);
+      }
+    }
+
+    leanViewWriters.forEach( async viewWriter => {
       const filePaths = await viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
       childFilePaths.push(...filePaths);
-    }
+    })
 
 
     const writtingRoutes = fs.writeFile(routesFilePath, freeLint(routes));
@@ -104,6 +110,14 @@ export default () => [
 
   set baseUrl(baseUrl) {
     this[_].baseUrl = String(baseUrl);
+  }
+
+  set isComponent(comp) {
+    this[_].isComponent = comp;
+  }
+
+  get isComponent() {
+    return this[_].isComponent;
   }
 
   get children() {
@@ -225,7 +239,8 @@ export default () => [
         name: elName,
         html: $.html($el),
         baseUrl: this.baseUrl,
-        styles: this.styles
+        styles: this.styles,
+        isComponent: true
       });
 
       children.push(child);
@@ -299,7 +314,7 @@ export default () => [
     // Transforming HTML into JSX
     let jsx = htmltojsx.convert(removeHtmlFromLinks(html)).trim();
     // Bind controller to view
-    this[_].jsx = bindJSX(jsx, children);
+    this[_].jsx = bindJSX(this[_], jsx, children);
   }
 
   get scripts() {
@@ -338,6 +353,7 @@ export default () => [
 
     this.name = options.name;
     this.parent = options.parent;
+    this.isComponent = options.isComponent;
     this.html = options.html;
     this.source = options.source;
   }
@@ -346,8 +362,11 @@ export default () => [
     const filePath = `${dir}/${this.className}.js`;
     const childFilePaths = [filePath];
     const writingChildren = this[_].children.map(async child => {
-      const filePaths = await child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
-      childFilePaths.push(...filePaths);
+      if(!writingFiles.includes(child.className)){
+        writingFiles.push(child.className);
+        const filePaths = await child.write(componentDir, componentDir, metaDir, stylesDir, ctrlsDir);
+        childFilePaths.push(...filePaths);
+      }
     });
     const isNestedComponent = dir === componentDir;
     let writingSelf
@@ -462,6 +481,7 @@ export default () => [
             ==>${this[_].composeProxiesDefault()}<==
           }
 
+          ${this[_].isComponent ? '' : `
           let renderMeta
           try {
             renderMeta = require("${metaDir}/${this.metaClassName}")
@@ -469,11 +489,12 @@ export default () => [
           } catch (e) {
             // pass
             renderMeta = () => null;
-          }
+          }`}
+
 
           return (
             <span>
-              {renderMeta()}
+              ${this[_].isComponent ? '{renderMeta()}' : ''}
               ==>${this.jsx}<==
             </span>
           )
@@ -573,14 +594,30 @@ export default () => [
   }
 }
 
-function bindJSX(jsx, children = []) {
-  console.log(this.className, this.parent)
-  children.forEach(child => {
-    jsx = jsx.replace(
-      new RegExp(`af-${child.elName}`, "g"),
-      `${child.className}.Controller`
-    );
-  });
+function bindJSX(self, jsx, children = []) {
+    // DETECT LIST
+    children.forEach((child, index) => {
+      const isList = (new RegExp(`(<af-${child.elName} />\\s*)+`, "")).exec(jsx);
+      if (isList) {
+        self.sockets.push(`${child.className}List${index}`)
+        jsx = jsx.replace(
+          new RegExp(`(<af-${child.elName} />\\s*)+`, ""),
+          `{map(proxies['${child.className}List${index}'], props => <div ${mergeProps(
+            ''
+          )}>{props.children ? props.children : null}</div>)}`
+
+        );
+      } else {
+        jsx = jsx.replace(
+          new RegExp(`(<af-${child.elName} />\\s*)+`, !self.isComponent ? "g" : ""),
+          !self.isComponent ? `<${child.className}.Controller />` :
+          `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps(
+            ''
+          )}>{props.children ? props.children : null}</${child.className}.Controller>)}`
+
+        );
+      }
+    });
 
   // ORDER MATTERS
   return (
