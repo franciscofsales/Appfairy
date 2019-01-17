@@ -1152,7 +1152,7 @@ export default () => [
 
     // Wrapping with .af-view will apply encapsulated CSS
     const $body = $("body");
-    const $afContainer = $('<span class="af-view"></span>');
+    const $afContainer = $('<span class="af-view" style="width:100%;height:100%;"></span>');
 
     $afContainer.append($body.contents());
     $afContainer.prepend("\n  ");
@@ -1359,10 +1359,10 @@ export default () => [
 
 
           return (
-            <span>
-              ${this[_].isComponent ? '{renderMeta()}' : ''}
+            <React.Fragment>
+              ${!this[_].isComponent ? '{renderMeta()}' : ''}
               ==>${this.jsx}<==
-            </span>
+            </React.Fragment>
           )
         }
       }
@@ -1406,6 +1406,7 @@ export default () => [
       compDir = '.';
     }
     const imported = [];
+
     const imports = this[_].children.map(child => {
       if (!imported.includes(child.className)) {
         imported.push(child.className);
@@ -1453,13 +1454,19 @@ export default () => [
 }) || _class);
 
 
+function camelize(text) {
+  return text.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+    return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+  }).replace(/\s+/g, '');
+}
+
 function bindJSX(self, jsx, children = []) {
   // DETECT LIST
   children.forEach((child, index) => {
-    const isList = new RegExp(`(<af-${child.elName} />\\s*)+`, "").exec(jsx);
+    const isList = new RegExp(`(<af-${child.elName} />\\s+){2,}`, "").exec(jsx);
     if (isList) {
-      self.sockets.push(`${child.className}List${index}`);
-      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, ""), `{map(proxies['${child.className}List${index}'], props => <div ${mergeProps('')}>{props.children ? props.children : null}</div>)}`);
+      self.sockets.push(`${camelize(child.className)}List${index}`);
+      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""), `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps('')}>{props.children ? props.children : null}</React.Fragment>)}`);
     } else {
       jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !self.isComponent ? "g" : ""), !self.isComponent ? `<${child.className}.Controller />` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
     }
