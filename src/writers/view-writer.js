@@ -521,9 +521,16 @@ export default () => [
   }
 
   _composeChildImports(compDir) {
+    if (!compDir) {
+      compDir = '.';
+    }
+    const imported = [];
     const imports = this[_].children.map(child => {
-      return `import ${child.className} from '${compDir}/${child.className}'`;
-    });
+      if (!imported.includes(child.className)) {
+        imported.push(child.className);
+        return `import ${child.className} from '${compDir}/${child.className}'`;
+      }
+    }).filter(imp => !!imp && imp.length);
 
     // Line skip
     imports.push("");
@@ -567,6 +574,7 @@ export default () => [
 }
 
 function bindJSX(jsx, children = []) {
+  console.log(this.className, this.parent)
   children.forEach(child => {
     jsx = jsx.replace(
       new RegExp(`af-${child.elName}`, "g"),
