@@ -82,7 +82,6 @@ export default () => [
       })
       .join("\n");
 
-    viewWriters = flattenChildren(viewWriters);
     const leanViewWriters = []
     for(const viewWriter of viewWriters) {
       if(!leanViewWriters.find(vw => vw.className === viewWriter.className)) {
@@ -95,6 +94,7 @@ export default () => [
       childFilePaths.push(...filePaths);
     })
 
+    viewWriters = flattenChildren(viewWriters);
 
     const writtingRoutes = fs.writeFile(routesFilePath, freeLint(routes));
     const writingIndex = fs.writeFile(indexFilePath, freeLint(index));
@@ -370,20 +370,23 @@ export default () => [
     });
     const isNestedComponent = dir === componentDir;
     let writingSelf
-    try {
-      await fs.readFile(`${dir}/${this.className}.js`);
-    } catch(e) {
-      // pass
-      writingSelf = fs.writeFile(
-        `${dir}/${this.className}.js`,
-        this[_].compose(
-          path.relative(dir, componentDir),
-          path.relative(dir, metaDir),
-          path.relative(dir, stylesDir),
-          ctrlsDir,
-          !isNestedComponent
+
+    if (!writingFiles.includes(`${this.className}.js`)) {
+      try {
+        await fs.readFile(`${dir}/${this.className}.js`);
+      } catch(e) {
+        // pass
+        writingSelf = fs.writeFile(
+          `${dir}/${this.className}.js`,
+          this[_].compose(
+            path.relative(dir, componentDir),
+            path.relative(dir, metaDir),
+            path.relative(dir, stylesDir),
+            ctrlsDir,
+            !isNestedComponent
+          )
         )
-      )
+      }
     }
 
 
