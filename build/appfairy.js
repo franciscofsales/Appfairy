@@ -1805,6 +1805,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 app.use(cookieParser());
 
+app.disable('x-powered-by');
+
 // Set up homepage, static assets, and capture everything else
 app.use(express.Router().get('/', loader));
 app.use(express.static(path.resolve(__dirname, '../build')));
