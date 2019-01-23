@@ -1218,8 +1218,20 @@ export default () => [
 
     // Transforming HTML into JSX
     let jsx = htmltojsx.convert(removeHtmlFromLinks(html)).trim();
+
+    // DETECT LIST
+    children.forEach((child, index) => {
+      const isList = new RegExp(`(<af-${child.elName} />\\s+){2,}`, "").exec(jsx);
+      if (isList) {
+        this[_].sockets.push(`${camelize(child.className)}List${index}`);
+        jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""), `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps('')}>{props.children ? props.children : null}</React.Fragment>)}`);
+      } else {
+        jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !this[_].isComponent ? "g" : ""), !this[_].isComponent ? `<${child.className}.Controller />` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
+      }
+    });
+
     // Bind controller to view
-    this[_].jsx = bindJSX(this[_], jsx, children);
+    this[_].jsx = bindJSX(jsx, children);
   }
 
   get scripts() {
@@ -1500,19 +1512,13 @@ function camelize(text) {
   }).replace(/\s+/g, '');
 }
 
-function bindJSX(self, jsx, children = []) {
-  // DETECT LIST
-  children.forEach((child, index) => {
-    const isList = new RegExp(`(<af-${child.elName} />\\s+){2,}`, "").exec(jsx);
-    if (isList) {
-      self.sockets.push(`${camelize(child.className)}List${index}`);
-      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""), `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps('')}>{props.children ? props.children : null}</React.Fragment>)}`);
-    } else {
-      jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !self.isComponent ? "g" : ""), !self.isComponent ? `<${child.className}.Controller />` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
-    }
+function bindJSX(jsx, children = []) {
+  children.forEach(child => {
+    jsx = jsx.replace(new RegExp(`af-${child.elName}`, "g"), `${child.className}.Controller`);
   });
 
   // ORDER MATTERS
+  // Open close
   return jsx
   // Open close
   .replace(/<([\w_-]+)-af-sock-([\w_-]+)(.*?)>([^]*)<\/\1-af-sock-\2>/g, (match, el, sock, attrs, children) =>
