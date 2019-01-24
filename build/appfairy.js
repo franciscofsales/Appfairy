@@ -996,9 +996,9 @@ import { Route } from 'react-router-dom';
 import * as Views from './views';
 
 export default () => [
-  <Route path="/" component={Views.IndexView} exact />,
+  <Route key="route_index" path="/" component={Views.IndexView} exact />,
   ${viewWriters.map(function (viewWriter) {
-        return `<Route path="${viewWriter.parent ? `/${viewWriter.parent}` : ''}/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`;
+        return `<Route key="route_${viewWriter.className.replace(/view/gi, '')}" path="${viewWriter.parent ? `/${viewWriter.parent}` : ''}/${viewWriter.className.replace(/view/gi, '').split(/(?=[A-Z])/).join('-').toLowerCase()}" component={Views.${viewWriter.className}} exact />`;
       }).join(",\n  ")}
 ]`;
       const index = viewWriters.map(function (viewWriter) {
