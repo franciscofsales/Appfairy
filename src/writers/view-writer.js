@@ -36,7 +36,7 @@ const flattenChildren = (children = [], flatten = []) => {
   return flatten;
 };
 
-const removeHtmlFromLinks = (html) => html.replace('index.html', '').replace(/\.html/ig, '')
+const removeHtmlFromLinks = (html) => html.replace('index.html', '/').replace(/\.html/ig, '')
 
 @Internal(_)
 class ViewWriter extends Writer {
