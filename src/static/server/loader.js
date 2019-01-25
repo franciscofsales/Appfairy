@@ -7,7 +7,7 @@ import fs from 'fs';
 // React requirements
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import Helmet from 'react-helmet';
+import Helmet, { HelmetProvider } from 'react-helmet-async';
 import { StaticRouter } from 'react-router';
 import { Frontload, frontloadServerRender } from 'react-frontload';
 import Loadable from 'react-loadable';
@@ -52,7 +52,7 @@ export default (req, res) => {
 
         return res.status(404).end();
       }
-
+      const helmetContext = {};
       const context = {};
       const modules = [];
 
@@ -72,13 +72,19 @@ export default (req, res) => {
       */
       frontloadServerRender(() =>
         renderToString(
-          <Loadable.Capture report={m => modules.push(m)}>
-            <StaticRouter location={req.url} context={context}>
-              <Frontload isServer={true}>
-                <App />
-              </Frontload>
-            </StaticRouter>
-          </Loadable.Capture>
+          <HelmetProvider context={helmetContext}>
+            <Loadable.Capture report={m => modules.push(m)}>
+              <StaticRouter location={req.url} context={context}>
+                <Frontload isServer={true}>
+                  <App>
+                    <Helmet>
+                      <title>AMLI Residential</title>
+                    </Helmet>
+                  </App>
+                </Frontload>
+              </StaticRouter>
+            </Loadable.Capture>
+          </HelmetProvider>
         )
       ).then(routeMarkup => {
         if (context.url) {
@@ -103,7 +109,7 @@ export default (req, res) => {
           );
 
           // We need to tell Helmet to compute the right meta tags, title, and such
-          const helmet = Helmet.renderStatic();
+          const { helmet } = helmetContext;
 
           // NOTE: Disable if you desire
           // Let's output the title, just to see SSR is working as intended

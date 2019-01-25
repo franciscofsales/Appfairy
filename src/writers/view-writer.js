@@ -522,19 +522,19 @@ export default () => [
           }
 
           ${this[_].isComponent ? '' : `
-          let renderMeta
+          let Metadata
           try {
-            renderMeta = require("${metaDir}/${this.metaClassName}")
-            renderMeta = renderMeta.default || renderMeta
+            Metadata = require("${metaDir}/${this.metaClassName}")
+            Metadata = Metadata.default || Metadata
           } catch (e) {
             // pass
-            renderMeta = () => null;
+            Metadata = null;
           }`}
 
 
           return (
             <React.Fragment>
-              ${!this[_].isComponent ? '{renderMeta()}' : ''}
+              ${!this[_].isComponent ? '{Metadata ? <Metadata /> : null}' : ''}
               ==>${this.jsx}<==
             </React.Fragment>
           )
