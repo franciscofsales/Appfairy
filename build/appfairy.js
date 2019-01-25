@@ -955,6 +955,11 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 const writingFiles = [];
 
+// attempt at supporting windows by monkey patching path.relative
+// to prevent backslashes
+const orPathRel = path__WEBPACK_IMPORTED_MODULE_2___default.a.relative;
+path__WEBPACK_IMPORTED_MODULE_2___default.a.relative = (from, to) => orPathRel(from, to).replace(/\\/gi, '/');
+
 
 
 const _ = Symbol("_ViewWriter");

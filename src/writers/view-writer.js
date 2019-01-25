@@ -12,6 +12,12 @@ import Writer from "./writer";
 
 const writingFiles = []
 
+// attempt at supporting windows by monkey patching path.relative
+// to prevent backslashes
+const orPathRel = path.relative;
+path.relative = (from, to) =>
+  orPathRel(from, to).replace(/\\/gi, '/')
+
 import {
   encapsulateCSS,
   escape,
