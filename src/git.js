@@ -3,8 +3,15 @@ import path from "path";
 import rimraf from "rimraf";
 // import { fs } from "./libs";
 
+// attempt at supporting windows by monkey patching path.relative
+// to prevent backslashes
+const orPathRel = path.relative;
+path.relative = (from, to) =>
+  orPathRel(from, to).replace(/\\/gi, '/')
+
+
 // Will add given files and will ignore those who aren't exist
-export const add = async files => {
+export const add = async (files, config) => {
   const { stdout: root } = await execa("git", ["rev-parse", "--show-toplevel"]);
 
   files = files.map(file => path.resolve(root, file));
@@ -23,20 +30,22 @@ export const add = async files => {
   await execa("git", [
     "add",
     ...files,
-    `${root}/src/views`,
-    `${root}/src/components`,
-    `${root}/src/styles`,
-    `${root}/server`,
-    `${root}/public`
+    `${config.output.src.root}/routes.js`,
+    config.output.src.views,
+    config.output.src.components,
+    config.output.src.styles,
+    config.output.server,
+    config.output.public,
   ]);
 
   return [
     ...files,
-    `${root}/src/views`,
-    `${root}/src/components`,
-    `${root}/src/styles`,
-    `${root}/server`,
-    `${root}/public`
+    `${config.output.src.root}/routes.js`,
+    config.output.src.views,
+    config.output.src.components,
+    config.output.src.styles,
+    config.output.server,
+    config.output.public,
   ];
 };
 
@@ -56,16 +65,17 @@ export const commit = (files, message, stdio = "inherit") => {
   });
 };
 
-export const removeAppfairyFiles = async () => {
+export const removeAppfairyFiles = async (config) => {
   const { stdout: diffFiles } = await execa("git", ["diff", "--name-only"]);
 
   if (diffFiles) {
-    throw Error(
-      [
-        "Cannot transpile: Your index contains uncommitted changes.",
-        "Please commit or stash them."
-      ].join("\n")
-    );
+    // throw Error(
+    //   [
+    //     "Cannot transpile: Your index contains uncommitted changes.",
+    //     "Please commit or stash them."
+    //   ].join("\n")
+    // );
+    console.log(['=========', 'Warning: You have uncommitted changes!', '========='].join('\n'))
   }
 
   // let { stderr, stdout: hash } = await execa("git", [
@@ -91,26 +101,27 @@ export const removeAppfairyFiles = async () => {
   // files = files.split("\n").filter(Boolean);
   // console.log(files)
 
-  const { stdout: root } = await execa("git", ["rev-parse", "--show-toplevel"]);
+  // const { stdout: root } = await execa("git", ["rev-parse", "--show-toplevel"]);
 
   await Promise.all([
     // ...files.map(async file => {
     //   return fs.unlink(`${root}/${file}`);
     // }),
-    new Promise(res => rimraf(`${root}/server`, () => res())),
-    new Promise(res => rimraf(`${root}/src/views`, () => res())),
-    new Promise(res => rimraf(`${root}/src/components`, () => res())),
-    new Promise(res => rimraf(`${root}/src/styles`, () => res())),
-    new Promise(res => rimraf(`${root}/src/routes.js`, () => res()))
+    new Promise(res => rimraf(`${config.output.src.root}/routes.js`, () => res())),
+    new Promise(res => rimraf(config.output.server, () => res())),
+    new Promise(res => rimraf(config.output.src.views, () => res())),
+    new Promise(res => rimraf(config.output.src.components, () => res())),
+    new Promise(res => rimraf(config.output.src.styles, () => res())),
   ]);
 
   // return [...files||[]];
   return [
-    `${root}/src/views`,
-    `${root}/src/components`,
-    `${root}/src/styles`,
-    `${root}/server`,
-    `${root}/public`
+    `${config.output.src.root}/routes.js`,
+    config.output.src.views,
+    config.output.src.components,
+    config.output.src.styles,
+    config.output.server,
+    config.output.public,
   ];
 };
 

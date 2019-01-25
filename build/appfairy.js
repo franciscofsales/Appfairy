@@ -126,7 +126,7 @@ const transpile = (() => {
     try {
       yield Promise.all([_libs__WEBPACK_IMPORTED_MODULE_3__["fs"].readdir(config.input).then(function (files) {
         inputFiles = files;
-      }), _git__WEBPACK_IMPORTED_MODULE_2__["default"].removeAppfairyFiles().then(function (files) {
+      }), _git__WEBPACK_IMPORTED_MODULE_2__["default"].removeAppfairyFiles(config).then(function (files) {
         outputFiles.push(...files);
       })]);
     } catch (e) {
@@ -189,7 +189,7 @@ const transpile = (() => {
       console.log(e);
     }
 
-    return _git__WEBPACK_IMPORTED_MODULE_2__["default"].add(outputFiles).then(function (files) {
+    return _git__WEBPACK_IMPORTED_MODULE_2__["default"].add(outputFiles, config).then(function (files) {
       return _git__WEBPACK_IMPORTED_MODULE_2__["default"].commit(files, "Update design");
     });
   });
@@ -345,9 +345,14 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 // import { fs } from "./libs";
 
+// attempt at supporting windows by monkey patching path.relative
+// to prevent backslashes
+const orPathRel = path__WEBPACK_IMPORTED_MODULE_1___default.a.relative;
+path__WEBPACK_IMPORTED_MODULE_1___default.a.relative = (from, to) => orPathRel(from, to).replace(/\\/gi, '/');
+
 // Will add given files and will ignore those who aren't exist
 const add = (() => {
-  var _ref = _asyncToGenerator(function* (files) {
+  var _ref = _asyncToGenerator(function* (files, config) {
     const { stdout: root } = yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["rev-parse", "--show-toplevel"]);
 
     files = files.map(function (file) {
@@ -366,12 +371,12 @@ const add = (() => {
     files = files.filter(function (file) {
       return unstaged.includes(file);
     });
-    yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["add", ...files, `${root}/src/views`, `${root}/src/components`, `${root}/src/styles`, `${root}/server`, `${root}/public`]);
+    yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["add", ...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public]);
 
-    return [...files, `${root}/src/views`, `${root}/src/components`, `${root}/src/styles`, `${root}/server`, `${root}/public`];
+    return [...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public];
   });
 
-  return function add(_x) {
+  return function add(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 })();
@@ -392,11 +397,17 @@ const commit = (files, message, stdio = "inherit") => {
 };
 
 const removeAppfairyFiles = (() => {
-  var _ref2 = _asyncToGenerator(function* () {
+  var _ref2 = _asyncToGenerator(function* (config) {
     const { stdout: diffFiles } = yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["diff", "--name-only"]);
 
     if (diffFiles) {
-      throw Error(["Cannot transpile: Your index contains uncommitted changes.", "Please commit or stash them."].join("\n"));
+      // throw Error(
+      //   [
+      //     "Cannot transpile: Your index contains uncommitted changes.",
+      //     "Please commit or stash them."
+      //   ].join("\n")
+      // );
+      console.log(['=========', 'Warning: You have uncommitted changes!', '========='].join('\n'));
     }
 
     // let { stderr, stdout: hash } = await execa("git", [
@@ -422,39 +433,39 @@ const removeAppfairyFiles = (() => {
     // files = files.split("\n").filter(Boolean);
     // console.log(files)
 
-    const { stdout: root } = yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["rev-parse", "--show-toplevel"]);
+    // const { stdout: root } = await execa("git", ["rev-parse", "--show-toplevel"]);
 
     yield Promise.all([
     // ...files.map(async file => {
     //   return fs.unlink(`${root}/${file}`);
     // }),
     new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${root}/server`, function () {
+      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${config.output.src.root}/routes.js`, function () {
         return res();
       });
     }), new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${root}/src/views`, function () {
+      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.server, function () {
         return res();
       });
     }), new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${root}/src/components`, function () {
+      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.src.views, function () {
         return res();
       });
     }), new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${root}/src/styles`, function () {
+      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.src.components, function () {
         return res();
       });
     }), new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${root}/src/routes.js`, function () {
+      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.src.styles, function () {
         return res();
       });
     })]);
 
     // return [...files||[]];
-    return [`${root}/src/views`, `${root}/src/components`, `${root}/src/styles`, `${root}/server`, `${root}/public`];
+    return [`${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public];
   });
 
-  return function removeAppfairyFiles() {
+  return function removeAppfairyFiles(_x3) {
     return _ref2.apply(this, arguments);
   };
 })();

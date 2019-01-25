@@ -15,7 +15,7 @@ export const transpile = async config => {
       fs.readdir(config.input).then(files => {
         inputFiles = files;
       }),
-      git.removeAppfairyFiles().then(files => {
+      git.removeAppfairyFiles(config).then(files => {
         outputFiles.push(...files);
       })
     ]);
@@ -88,7 +88,7 @@ export const transpile = async config => {
     console.log(e);
   }
 
-  return git.add(outputFiles).then(files => {
+  return git.add(outputFiles, config).then(files => {
     return git.commit(files, "Update design");
   });
 };

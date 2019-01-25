@@ -152,7 +152,8 @@ if (typeof config.input != "string") {
 if (typeof config.output == "string") {
   config.output = {
     public: `${config.output}/public`,
-    src: `${config.output}/src`
+    src: `${config.output}/src`,
+    server: `${config.output}/server`,
   };
 }
 if (typeof config.output != "object") {
@@ -168,7 +169,8 @@ if (typeof config.output.src == "string") {
     views: `${config.output.src}/views`,
     components: `${config.output.src}/components`,
     meta: `${config.output.src}/meta`,
-    controllers: `${config.output.src}/controllers`
+    controllers: `${config.output.src}/controllers`,
+    root: config.output.src,
   };
 }
 if (typeof config.output.src != "object") {
@@ -202,13 +204,15 @@ if (typeof config.source != "string") {
 config.input = path.resolve(config.__dirname, config.input);
 config.output = {
   public: path.resolve(config.__dirname, config.output.public),
+  server: path.resolve(config.__dirname, config.output.server),
   src: {
     scripts: path.resolve(config.__dirname, config.output.src.scripts),
     styles: path.resolve(config.__dirname, config.output.src.styles),
     views: path.resolve(config.__dirname, config.output.src.views),
     components: path.resolve(config.__dirname, config.output.src.components),
     meta: path.resolve(config.__dirname, config.output.src.meta),
-    controllers: path.resolve(config.__dirname, config.output.src.controllers)
+    controllers: path.resolve(config.__dirname, config.output.src.controllers),
+    root: path.resolve(config.__dirname, config.output.src.root),
   }
 };
 
