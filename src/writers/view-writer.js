@@ -234,12 +234,17 @@ export default () => [
       const $el = $(el);
       const elName = $el.attr("af-el");
       const $afEl = $(`<af-${elName}></af-${elName}>`);
-
-      $afEl.attr("af-sock", $el.attr("af-sock"));
+      // const sock = $el.attr("af-sock");
+      // $afEl.attr("af-sock", $el.attr("af-sock"));
       $el.attr("af-el", null);
-      $el.attr("af-sock", null);
+      // $el.attr("af-sock", null);
       $afEl.insertAfter($el);
+      // if (sock !== null && sock !== undefined) {
+      //   $el.prepend(`<span af-sock="${sock}">`);
+      //   $el.append('</span>');
+      // }
       $el.remove();
+
 
       const child = new ViewWriter({
         name: elName,
