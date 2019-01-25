@@ -986,7 +986,8 @@ const flattenChildren = (children = [], flatten = []) => {
   return flatten;
 };
 
-const removeHtmlFromLinks = html => html.replace('index.html', '/').replace(/\.html/ig, '');
+const adjustImagesToRoot = html => html.replace(/src="/ig, 'src="/');
+const removeHtmlFromLinks = html => adjustImagesToRoot(html.replace('index.html', '').replace(/\.html/ig, '').replace(/href="/ig, 'href="/'));
 
 let ViewWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["Internal"])(_), _dec(_class = class ViewWriter extends _writer__WEBPACK_IMPORTED_MODULE_10__["default"] {
   static writeAll(viewWriters, dir, componentDir, metaDir, stylesDir, ctrlsDir) {
