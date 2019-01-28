@@ -3,6 +3,7 @@
 export default `// Express requirements
 import path from 'path';
 import fs from 'fs';
+import 'isomorphic-fetch'
 
 // React requirements
 import React from 'react';
@@ -11,9 +12,11 @@ import Helmet, { HelmetProvider } from 'react-helmet-async';
 import { StaticRouter } from 'react-router';
 import { Frontload, frontloadServerRender } from 'react-frontload';
 import Loadable from 'react-loadable';
+import { getDataFromTree, ApolloProvider } from "react-apollo";
 
 import App from '../src/App';
 import manifest from '../build/manifest.json';
+import client from "../src/helpers/apollo-client";
 
 // LOADER
 export default (req, res) => {
@@ -34,7 +37,7 @@ export default (req, res) => {
     '</head>');
     data = data.replace(
       '<div id="root"></div>',
-      '<div id="root">'+body+'</div><script>window.__PRELOADED_STATE__ = '+state+'</script>'
+      '<div id="root">'+body+'</div><script>window.__APOLLO_STATE__ = '+JSON.stringify(state).replace(/</g, "\\u003c")+'</script>'
     );
     data = data.replace('</body>', scripts.join('') + '</body>');
 
@@ -55,7 +58,23 @@ export default (req, res) => {
       const helmetContext = {};
       const context = {};
       const modules = [];
-
+      const Root = () => (
+        <ApolloProvider client={client}>
+          <HelmetProvider context={helmetContext}>
+            <Loadable.Capture report={m => modules.push(m)}>
+              <StaticRouter location={req.url} context={context}>
+                <Frontload isServer={true}>
+                  <App>
+                    <Helmet>
+                      <title>AMLI Residential</title>
+                    </Helmet>
+                  </App>
+                </Frontload>
+              </StaticRouter>
+            </Loadable.Capture>
+          </HelmetProvider>
+        </ApolloProvider>
+      )
       /*
         Here's the core funtionality of this file. We do the following in specific order (inside-out):
           1. Load the <App /> component
@@ -72,21 +91,9 @@ export default (req, res) => {
       */
       frontloadServerRender(() =>
         renderToString(
-          <HelmetProvider context={helmetContext}>
-            <Loadable.Capture report={m => modules.push(m)}>
-              <StaticRouter location={req.url} context={context}>
-                <Frontload isServer={true}>
-                  <App>
-                    <Helmet>
-                      <title>AMLI Residential</title>
-                    </Helmet>
-                  </App>
-                </Frontload>
-              </StaticRouter>
-            </Loadable.Capture>
-          </HelmetProvider>
+          <Root />
         )
-      ).then(routeMarkup => {
+      ).then(async routeMarkup => {
         if (context.url) {
 
           res.writeHead(302, {
@@ -96,7 +103,8 @@ export default (req, res) => {
           res.end();
         } else {
           // Otherwise, we carry on...
-
+          await getDataFromTree(<Root />);
+          const initialApolloState = client.extract();
           // Let's give ourself a function to load all our page-specific JS assets for code splitting
           const extractAssets = (assets, chunks) =>
             Object.keys(assets)
@@ -122,6 +130,7 @@ export default (req, res) => {
             meta: helmet.meta.toString(),
             body: routeMarkup,
             scripts: extraChunks,
+            state: initialApolloState
           });
 
           // We have all the final HTML, let's send it to the user already!
