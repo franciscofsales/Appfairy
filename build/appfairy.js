@@ -1247,7 +1247,7 @@ export default () => [
         this[_].sockets.push(`${camelize(child.className)}List${index}`);
         jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""), `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps('')}>{props.children ? props.children : null}</React.Fragment>)}`);
       } else {
-        jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !this[_].isComponent ? "g" : ""), !this[_].isComponent ? `<${child.className}.Controller />` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
+        jsx = jsx.replace(new RegExp(`(<af-${child.elName} />\\s*)+`, !this[_].isComponent ? "g" : ""), !this[_].isComponent ? `<${child.className}.Controller {...this.props}/>` : `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps('')}>{props.children ? props.children : null}</${child.className}.Controller>)}`);
       }
     });
 
@@ -1433,7 +1433,7 @@ export default () => [
 
           return (
             <React.Fragment>
-              ${!this[_].isComponent ? '{Metadata ? <Metadata /> : null}' : ''}
+              ${!this[_].isComponent ? '{Metadata ? <Metadata {...this.props} /> : null}' : ''}
               ==>${this.jsx}<==
             </React.Fragment>
           )
