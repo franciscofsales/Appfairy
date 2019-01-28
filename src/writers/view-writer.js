@@ -529,7 +529,15 @@ export default () => [
           } catch (e) {
             // pass
             Metadata = null;
-          }`}
+          }
+          try {
+            Metadata = require("${metaDir}/defaultMeta")
+            Metadata = Metadata.default || Metadata
+          } catch (e) {
+            // pass
+            Metadata = null;
+          }
+          `}
 
 
           return (
