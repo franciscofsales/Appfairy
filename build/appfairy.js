@@ -1667,12 +1667,11 @@ import 'isomorphic-fetch'
 
 // React requirements
 import React from 'react';
-import { renderToString } from 'react-dom/server';
 import Helmet, { HelmetProvider } from 'react-helmet-async';
 import { StaticRouter } from 'react-router';
 import { Frontload, frontloadServerRender } from 'react-frontload';
 import Loadable from 'react-loadable';
-import { getDataFromTree, ApolloProvider } from "react-apollo";
+import { renderToStringWithData, ApolloProvider } from "react-apollo";
 
 import App from '../src/App';
 import manifest from '../build/manifest.json';
@@ -1708,7 +1707,7 @@ export default (req, res) => {
   fs.readFile(
     path.resolve(__dirname, '../build/index.html'),
     'utf8',
-    (err, htmlData) => {
+    async (err, htmlData) => {
       // If there's an error... serve up something nasty
       if (err) {
         console.error('Read error', err);
@@ -1718,13 +1717,14 @@ export default (req, res) => {
       const helmetContext = {};
       const context = {};
       const modules = [];
+      const routes = await App.getRoutes(client);
       const Root = () => (
         <ApolloProvider client={client}>
           <HelmetProvider context={helmetContext}>
             <Loadable.Capture report={m => modules.push(m)}>
               <StaticRouter location={req.url} context={context}>
                 <Frontload isServer={true}>
-                  <App>
+                  <App routes={routes}>
                     <Helmet>
                       <title>AMLI Residential</title>
                     </Helmet>
@@ -1750,7 +1750,7 @@ export default (req, res) => {
         then loaded into the correct components and sent as a Promise to be handled below.
       */
       frontloadServerRender(() =>
-        renderToString(
+        renderToStringWithData(
           <Root />
         )
       ).then(async routeMarkup => {
@@ -1763,7 +1763,7 @@ export default (req, res) => {
           res.end();
         } else {
           // Otherwise, we carry on...
-          await getDataFromTree(<Root />);
+
           const initialApolloState = client.extract();
           // Let's give ourself a function to load all our page-specific JS assets for code splitting
           const extractAssets = (assets, chunks) =>
