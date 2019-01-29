@@ -1719,8 +1719,8 @@ export default (req, res) => {
       const modules = [];
       const routes = await App.getRoutes(client);
       const Root = () => (
-        <ApolloProvider client={client}>
-          <HelmetProvider context={helmetContext}>
+        <HelmetProvider context={helmetContext}>
+          <ApolloProvider client={client}>
             <Loadable.Capture report={m => modules.push(m)}>
               <StaticRouter location={req.url} context={context}>
                 <Frontload isServer={true}>
@@ -1732,8 +1732,8 @@ export default (req, res) => {
                 </Frontload>
               </StaticRouter>
             </Loadable.Capture>
-          </HelmetProvider>
-        </ApolloProvider>
+          </ApolloProvider>
+        </HelmetProvider>
       )
       /*
         Here's the core funtionality of this file. We do the following in specific order (inside-out):
