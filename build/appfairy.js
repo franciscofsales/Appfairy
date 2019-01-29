@@ -1023,6 +1023,8 @@ export default () => [
       }).join("\n");
 
       const leanViewWriters = [];
+      viewWriters = flattenChildren(viewWriters);
+
       for (const viewWriter of viewWriters) {
         if (!leanViewWriters.find(function (vw) {
           return vw.className === viewWriter.className;
@@ -1030,7 +1032,6 @@ export default () => [
           leanViewWriters.push(viewWriter);
         }
       }
-
       leanViewWriters.forEach((() => {
         var _ref = _asyncToGenerator(function* (viewWriter) {
           const filePaths = yield viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
@@ -1041,8 +1042,6 @@ export default () => [
           return _ref.apply(this, arguments);
         };
       })());
-
-      viewWriters = flattenChildren(viewWriters);
 
       const writtingRoutes = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(routesFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(routes));
       const writingIndex = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(indexFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(index));
@@ -1149,8 +1148,11 @@ export default () => [
       }
     });
 
+    // console.log(this[_].className, ($("[af-el]") || []).length)
+
     let el = $("[af-el]")[0];
     while (el) {
+
       const $el = $(el);
       const elName = $el.attr("af-el");
       const $afEl = $(`<af-${elName}></af-${elName}>`);

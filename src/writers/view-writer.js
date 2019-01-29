@@ -90,18 +90,19 @@ export default () => [
       .join("\n");
 
     const leanViewWriters = []
+    viewWriters = flattenChildren(viewWriters);
+
     for(const viewWriter of viewWriters) {
       if(!leanViewWriters.find(vw => vw.className === viewWriter.className)) {
         leanViewWriters.push(viewWriter);
       }
     }
-
     leanViewWriters.forEach( async viewWriter => {
       const filePaths = await viewWriter.write(dir, componentDir, metaDir, stylesDir, ctrlsDir);
       childFilePaths.push(...filePaths);
     })
 
-    viewWriters = flattenChildren(viewWriters);
+
 
     const writtingRoutes = fs.writeFile(routesFilePath, freeLint(routes));
     const writingIndex = fs.writeFile(indexFilePath, freeLint(index));
@@ -230,8 +231,11 @@ export default () => [
       }
     });
 
+    // console.log(this[_].className, ($("[af-el]") || []).length)
+
     let el = $("[af-el]")[0];
     while (el) {
+
       const $el = $(el);
       const elName = $el.attr("af-el");
       const $afEl = $(`<af-${elName}></af-${elName}>`);
@@ -245,7 +249,6 @@ export default () => [
       //   $el.append('</span>');
       // }
       $el.remove();
-
 
       const child = new ViewWriter({
         name: elName,
