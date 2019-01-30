@@ -3,9 +3,9 @@ import HTMLtoJSX from "htmltojsx";
 import path from "path";
 import statuses from "statuses";
 import uglify from "uglify-js";
-import ServerIndex from '../static/server';
-import ServerLoader from '../static/server/loader';
-import ServerServer from '../static/server/server';
+// import ServerIndex from '../static/server';
+// import ServerLoader from '../static/server/loader';
+// import ServerServer from '../static/server/server';
 import { fs, mkdirp } from "../libs";
 import raw from "../raw";
 import Writer from "./writer";
@@ -52,15 +52,15 @@ class ViewWriter extends Writer {
     await mkdirp(componentDir);
     await mkdirp(stylesDir);
     await mkdirp(metaDir);
-    await mkdirp(`${dir}/../../server`);
+    // await mkdirp(`${dir}/../../server`);
 
-    const serverPromises = [
-      fs.writeFile(`${dir}/../../server/index.js`, freeLint(ServerIndex)),
-      fs.writeFile(`${dir}/../../server/server.js`, freeLint(ServerServer)),
-      fs.writeFile(`${dir}/../../server/loader.js`, freeLint(ServerLoader))
-    ]
+    // const serverPromises = [
+    //   fs.writeFile(`${dir}/../../server/index.js`, freeLint(ServerIndex)),
+    //   fs.writeFile(`${dir}/../../server/server.js`, freeLint(ServerServer)),
+    //   fs.writeFile(`${dir}/../../server/loader.js`, freeLint(ServerLoader))
+    // ]
 
-    await Promise.all(serverPromises);
+    // await Promise.all(serverPromises);
 
 
     const indexFilePath = `${dir}/index.js`;
