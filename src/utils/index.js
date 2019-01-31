@@ -16,12 +16,17 @@ export const escape = (str, quote) => {
   }
 }
 
+export const importantizeCSS = (css) => {
+  return css.replace(/(!important)?;/gi, ' !important;');
+}
+
 // Encapsulates all rules under .af-view
 export const encapsulateCSS = (css, source) => {
   return css.replace(
     /((?:^|\{|\}|;)\s*(?:\/\*[^]*?\*\/\s*)*)([^@{}]+?)(\s*\{)/g, (
     match, left, rule, right
   ) => {
+
     // Animation keyframe e.g. 50%
     if (/^\d/.test(rule)) return match
     // Empty line skip, probably after a media query or so
@@ -30,11 +35,22 @@ export const encapsulateCSS = (css, source) => {
     // Apply for all selectors in rule
     // Note that <html /> and <body /> tags are replaced with .af-view
     rule = rule
-      .replace(/\.([\w_-]+)/g, '.af-class-$1')
+      .replace(/\.(af-class-)?([\w_-]+)/g, '.af-class-$2')
+
+    rule = rule
       .replace(/\[class(.?)="( ?)([^"]+)( ?)"\]/g, '[class$1="$2af-class-$3$4"]')
+
+    rule = rule
       .replace(/([^\s][^,]*)(\s*,?)/g, '.af-view $1$2')
+
+    rule = rule
       .replace(/\.af-view html/g, '.af-view')
+
+    rule = rule
       .replace(/\.af-view body/g, '.af-view')
+
+    rule = rule
+      .replace('.af-view .af-class-af-view', '')
 
     switch (source) {
       case 'webflow':

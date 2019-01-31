@@ -371,9 +371,13 @@ const add = (() => {
     files = files.filter(function (file) {
       return unstaged.includes(file);
     });
-    yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["add", ...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public]);
+    yield execa__WEBPACK_IMPORTED_MODULE_0___default()("git", ["add", ...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles,
+    // config.output.server,
+    config.output.public]);
 
-    return [...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public];
+    return [...files, `${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles,
+    // config.output.server,
+    config.output.public];
   });
 
   return function add(_x, _x2) {
@@ -443,11 +447,9 @@ const removeAppfairyFiles = (() => {
       return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(`${config.output.src.root}/routes.js`, function () {
         return res();
       });
-    }), new Promise(function (res) {
-      return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.server, function () {
-        return res();
-      });
-    }), new Promise(function (res) {
+    }),
+    // new Promise(res => rimraf(config.output.server, () => res())),
+    new Promise(function (res) {
       return rimraf__WEBPACK_IMPORTED_MODULE_2___default()(config.output.src.views, function () {
         return res();
       });
@@ -462,7 +464,9 @@ const removeAppfairyFiles = (() => {
     })]);
 
     // return [...files||[]];
-    return [`${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles, config.output.server, config.output.public];
+    return [`${config.output.src.root}/routes.js`, config.output.src.views, config.output.src.components, config.output.src.styles,
+    // config.output.server,
+    config.output.public];
   });
 
   return function removeAppfairyFiles(_x3) {
@@ -641,6 +645,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "escape", function() { return escape; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "importantizeCSS", function() { return importantizeCSS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "encapsulateCSS", function() { return encapsulateCSS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "freeText", function() { return freeText; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "freeLint", function() { return freeLint; });
@@ -674,9 +679,14 @@ const escape = (str, quote) => {
   }
 };
 
+const importantizeCSS = css => {
+  return css.replace(/(!important)?;/gi, ' !important;');
+};
+
 // Encapsulates all rules under .af-view
 const encapsulateCSS = (css, source) => {
   return css.replace(/((?:^|\{|\}|;)\s*(?:\/\*[^]*?\*\/\s*)*)([^@{}]+?)(\s*\{)/g, (match, left, rule, right) => {
+
     // Animation keyframe e.g. 50%
     if (/^\d/.test(rule)) return match;
     // Empty line skip, probably after a media query or so
@@ -684,7 +694,17 @@ const encapsulateCSS = (css, source) => {
 
     // Apply for all selectors in rule
     // Note that <html /> and <body /> tags are replaced with .af-view
-    rule = rule.replace(/\.([\w_-]+)/g, '.af-class-$1').replace(/\[class(.?)="( ?)([^"]+)( ?)"\]/g, '[class$1="$2af-class-$3$4"]').replace(/([^\s][^,]*)(\s*,?)/g, '.af-view $1$2').replace(/\.af-view html/g, '.af-view').replace(/\.af-view body/g, '.af-view');
+    rule = rule.replace(/\.(af-class-)?([\w_-]+)/g, '.af-class-$2');
+
+    rule = rule.replace(/\[class(.?)="( ?)([^"]+)( ?)"\]/g, '[class$1="$2af-class-$3$4"]');
+
+    rule = rule.replace(/([^\s][^,]*)(\s*,?)/g, '.af-view $1$2');
+
+    rule = rule.replace(/\.af-view html/g, '.af-view');
+
+    rule = rule.replace(/\.af-view body/g, '.af-view');
+
+    rule = rule.replace('.af-view .af-class-af-view', '');
 
     switch (source) {
       case 'webflow':
@@ -899,10 +919,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _view_writer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(23);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ViewWriter", function() { return _view_writer__WEBPACK_IMPORTED_MODULE_1__["default"]; });
 
-/* harmony import */ var _script_writer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(31);
+/* harmony import */ var _script_writer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(28);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScriptWriter", function() { return _script_writer__WEBPACK_IMPORTED_MODULE_2__["default"]; });
 
-/* harmony import */ var _style_writer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(33);
+/* harmony import */ var _style_writer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(30);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StyleWriter", function() { return _style_writer__WEBPACK_IMPORTED_MODULE_3__["default"]; });
 
 
@@ -941,13 +961,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var statuses__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(statuses__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var uglify_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(26);
 /* harmony import */ var uglify_js__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(uglify_js__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _static_server__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(27);
-/* harmony import */ var _static_server_loader__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(28);
-/* harmony import */ var _static_server_server__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(29);
-/* harmony import */ var _libs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(7);
-/* harmony import */ var _raw__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(30);
-/* harmony import */ var _writer__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(22);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(17);
+/* harmony import */ var _libs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(7);
+/* harmony import */ var _raw__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(27);
+/* harmony import */ var _writer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(22);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(17);
 var _dec, _class;
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -957,9 +974,9 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 
 
-
-
-
+// import ServerIndex from '../static/server';
+// import ServerLoader from '../static/server/loader';
+// import ServerServer from '../static/server/server';
 
 
 
@@ -989,18 +1006,23 @@ const flattenChildren = (children = [], flatten = []) => {
 const adjustImagesToRoot = html => html.replace(/src="/ig, 'src="/');
 const removeHtmlFromLinks = html => adjustImagesToRoot(html.replace('index.html', '').replace(/\.html/ig, '').replace(/href="/ig, 'href="/'));
 
-let ViewWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["Internal"])(_), _dec(_class = class ViewWriter extends _writer__WEBPACK_IMPORTED_MODULE_10__["default"] {
+let ViewWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["Internal"])(_), _dec(_class = class ViewWriter extends _writer__WEBPACK_IMPORTED_MODULE_7__["default"] {
   static writeAll(viewWriters, dir, componentDir, metaDir, stylesDir, ctrlsDir) {
     return _asyncToGenerator(function* () {
-      yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(dir);
-      yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(componentDir);
-      yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(stylesDir);
-      yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(metaDir);
-      yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(`${dir}/../../server`);
+      yield Object(_libs__WEBPACK_IMPORTED_MODULE_5__["mkdirp"])(dir);
+      yield Object(_libs__WEBPACK_IMPORTED_MODULE_5__["mkdirp"])(componentDir);
+      yield Object(_libs__WEBPACK_IMPORTED_MODULE_5__["mkdirp"])(stylesDir);
+      yield Object(_libs__WEBPACK_IMPORTED_MODULE_5__["mkdirp"])(metaDir);
+      // await mkdirp(`${dir}/../../server`);
 
-      const serverPromises = [_libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(`${dir}/../../server/index.js`, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(_static_server__WEBPACK_IMPORTED_MODULE_5__["default"])), _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(`${dir}/../../server/server.js`, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(_static_server_server__WEBPACK_IMPORTED_MODULE_7__["default"])), _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(`${dir}/../../server/loader.js`, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(_static_server_loader__WEBPACK_IMPORTED_MODULE_6__["default"]))];
+      // const serverPromises = [
+      //   fs.writeFile(`${dir}/../../server/index.js`, freeLint(ServerIndex)),
+      //   fs.writeFile(`${dir}/../../server/server.js`, freeLint(ServerServer)),
+      //   fs.writeFile(`${dir}/../../server/loader.js`, freeLint(ServerLoader))
+      // ]
 
-      yield Promise.all(serverPromises);
+      // await Promise.all(serverPromises);
+
 
       const indexFilePath = `${dir}/index.js`;
       const helpersFilePath = `${dir}/../helpers.js`;
@@ -1043,9 +1065,9 @@ export default () => [
         };
       })());
 
-      const writtingRoutes = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(routesFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(routes));
-      const writingIndex = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(indexFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(index));
-      const writingHelpers = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(helpersFilePath, _raw__WEBPACK_IMPORTED_MODULE_9__["default"].viewHelpers);
+      const writtingRoutes = _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].writeFile(routesFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_8__["freeLint"])(routes));
+      const writingIndex = _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].writeFile(indexFilePath, Object(_utils__WEBPACK_IMPORTED_MODULE_8__["freeLint"])(index));
+      const writingHelpers = _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].writeFile(helpersFilePath, _raw__WEBPACK_IMPORTED_MODULE_6__["default"].viewHelpers);
 
       yield Promise.all([writingIndex, writingHelpers, writtingRoutes]);
       return childFilePaths;
@@ -1077,11 +1099,11 @@ export default () => [
       name = statuses__WEBPACK_IMPORTED_MODULE_3___default.a[name];
     }
 
-    const words = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["splitWords"])(name);
+    const words = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["splitWords"])(name);
     Object.assign(this[_], {
-      ctrlClassName: words.concat("controller").map(_utils__WEBPACK_IMPORTED_MODULE_11__["upperFirst"]).join(""),
-      metaClassName: words.concat("meta").map(_utils__WEBPACK_IMPORTED_MODULE_11__["upperFirst"]).join(""),
-      className: words.concat("view").map(_utils__WEBPACK_IMPORTED_MODULE_11__["upperFirst"]).join(""),
+      ctrlClassName: words.concat("controller").map(_utils__WEBPACK_IMPORTED_MODULE_8__["upperFirst"]).join(""),
+      metaClassName: words.concat("meta").map(_utils__WEBPACK_IMPORTED_MODULE_8__["upperFirst"]).join(""),
+      className: words.concat("view").map(_utils__WEBPACK_IMPORTED_MODULE_8__["upperFirst"]).join(""),
       elName: words.map(word => word.toLowerCase()).join("-"),
       name: words.concat("view").map(word => word.toLowerCase()).join("-")
     });
@@ -1121,8 +1143,9 @@ export default () => [
     $("style").each((i, el) => {
       const $el = $(el);
       const html = $el.html();
-      const css = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["encapsulateCSS"])(html, this.source);
 
+      let css = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["encapsulateCSS"])(html, this.source);
+      css = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["importantizeCSS"])(css);
       $el.html(css);
     });
 
@@ -1322,10 +1345,10 @@ export default () => [
 
       if (!writingFiles.includes(`${_this.className}.js`)) {
         try {
-          yield _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].readFile(`${dir}/${_this.className}.js`);
+          yield _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].readFile(`${dir}/${_this.className}.js`);
         } catch (e) {
           // pass
-          writingSelf = _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(`${dir}/${_this.className}.js`, _this[_].compose(path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, componentDir), path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, metaDir), path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, stylesDir), ctrlsDir, !isNestedComponent));
+          writingSelf = _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].writeFile(`${dir}/${_this.className}.js`, _this[_].compose(path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, componentDir), path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, metaDir), path__WEBPACK_IMPORTED_MODULE_2___default.a.relative(dir, stylesDir), ctrlsDir, !isNestedComponent));
         }
       }
 
@@ -1379,8 +1402,8 @@ export default () => [
       }).join("\n\n");
       if (!stylesDir || !css.length) return true;
       try {
-        yield Object(_libs__WEBPACK_IMPORTED_MODULE_8__["mkdirp"])(stylesDir);
-        yield _libs__WEBPACK_IMPORTED_MODULE_8__["fs"].writeFile(`${stylesDir}/${_this2.className}.css`, Object(_utils__WEBPACK_IMPORTED_MODULE_11__["escape"])(css.trim()));
+        yield Object(_libs__WEBPACK_IMPORTED_MODULE_5__["mkdirp"])(stylesDir);
+        yield _libs__WEBPACK_IMPORTED_MODULE_5__["fs"].writeFile(`${stylesDir}/${_this2.className}.css`, Object(_utils__WEBPACK_IMPORTED_MODULE_8__["escape"])(css.trim()));
       } catch (e) {
         console.log(e);
       }
@@ -1388,7 +1411,7 @@ export default () => [
   }
 
   _compose(compDir, metaDir, stylesDir, ctrlsDir, shouldHaveStyles = true) {
-    return Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeLint"])(`
+    return Object(_utils__WEBPACK_IMPORTED_MODULE_8__["freeLint"])(`
       import React from 'react'
       import { createScope, map, transformProxies } from '../helpers'
       ${shouldHaveStyles ? `import "${stylesDir}/${this.className}.css"` : ''}
@@ -1475,7 +1498,7 @@ export default () => [
       return sheet;
     }).join("\n\n");
 
-    return Object(_utils__WEBPACK_IMPORTED_MODULE_11__["escape"])(css.trim());
+    return Object(_utils__WEBPACK_IMPORTED_MODULE_8__["escape"])(css.trim());
   }
 
   _composeProxiesDefault() {
@@ -1513,18 +1536,18 @@ export default () => [
       // Unknown script format ??? fallback to maxified version
       const code = minified || script.body;
 
-      return `Promise.resolve("${Object(_utils__WEBPACK_IMPORTED_MODULE_11__["escape"])(code)}"),`;
+      return `Promise.resolve("${Object(_utils__WEBPACK_IMPORTED_MODULE_8__["escape"])(code)}"),`;
     }).join("\n");
   }
 
   _composeScriptsInvocations() {
     if (!this[_].scripts) return "";
 
-    const invoke = Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeScope"])("eval(arguments[0])", "window", {
+    const invoke = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["freeScope"])("eval(arguments[0])", "window", {
       script: null
     });
 
-    return Object(_utils__WEBPACK_IMPORTED_MODULE_11__["freeText"])(`
+    return Object(_utils__WEBPACK_IMPORTED_MODULE_8__["freeText"])(`
       scripts.concat(Promise.resolve()).reduce((loaded, loading) => {
         return loaded.then((script) => {
           ==>${invoke}<==
@@ -1605,300 +1628,6 @@ module.exports = require("uglify-js");
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* eslint-disable */
-
-/* harmony default export */ __webpack_exports__["default"] = (`const md5File = require('md5-file');
-const path = require('path');
-
-// CSS styles will be imported on load and that complicates matters... ignore those bad boys!
-const ignoreStyles = require('ignore-styles');
-const register = ignoreStyles.default;
-
-// We also want to ignore all image requests
-// When running locally these will load from a standard import
-// When running on the server, we want to load via their hashed version in the build folder
-const extensions = ['.gif', '.jpeg', '.jpg', '.png', '.svg'];
-
-// Override the default style ignorer, also modifying all image requests
-register(ignoreStyles.DEFAULT_EXTENSIONS, (mod, filename) => {
-  if (!extensions.find(f => filename.endsWith(f))) {
-    // If we find a style
-    return ignoreStyles.noOp();
-  } else {
-    // If we find an image
-    const hash = md5File.sync(filename).slice(0, 8);
-    const bn = path.basename(filename).replace(/(\.\w{3})$/, '.'+hash+'$1');
-
-    mod.exports = '/static/media/'+bn;
-  }
-});
-
-// Set up babel to do its thing... env for the latest toys, react-app for CRA
-// Notice three plugins: the first two allow us to use import rather than require, the third is for code splitting
-// Polyfill is required for Babel 7, polyfill includes a custom regenerator runtime and core-js
-require('@babel/polyfill');
-require('@babel/register')({
-  ignore: [/\\/(build|node_modules)\\//],
-  presets: ['@babel/preset-env', '@babel/preset-react'],
-  plugins: [
-    '@babel/plugin-syntax-dynamic-import',
-    '@babel/plugin-proposal-class-properties',
-    'dynamic-import-node',
-    'react-loadable/babel'
-  ]
-});
-
-// Now that the nonsense is over... load up the server entry point
-require('./server');
-`);
-
-/* eslint-enable */
-
-/***/ }),
-/* 28 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* eslint-disable */
-
-/* harmony default export */ __webpack_exports__["default"] = (`// Express requirements
-import path from 'path';
-import fs from 'fs';
-import 'isomorphic-fetch'
-
-// React requirements
-import React from 'react';
-import Helmet, { HelmetProvider } from 'react-helmet-async';
-import { StaticRouter } from 'react-router';
-import { Frontload, frontloadServerRender } from 'react-frontload';
-import Loadable from 'react-loadable';
-import { renderToStringWithData, ApolloProvider } from "react-apollo";
-
-import App from '../src/App';
-import manifest from '../build/manifest.json';
-import client from "../src/helpers/apollo-client";
-
-// LOADER
-export default (req, res) => {
-  /*
-    A simple helper function to prepare the HTML markup. This loads:
-      - Page title
-      - SEO meta tags
-      - Preloaded state (for Redux) depending on the current route
-      - Code-split script tags depending on the current route
-  */
-  const injectHTML = (data, { html, title, meta, body, scripts, state }) => {
-    data = data.replace('<html>', '<html '+ html + '>');
-    data = data.replace(/<title>.*?<\\/title>/g, title);
-    data = data.replace('</head>', meta +
-        '<link rel="stylesheet" href="/css/webflow.css" />' +
-        '<link rel="stylesheet" href="/css/amli.webflow.css" />' +
-        '<link rel="stylesheet" href="/css/normalize.css" />' +
-    '</head>');
-    data = data.replace(
-      '<div id="root"></div>',
-      '<div id="root">'+body+'</div><script>window.__APOLLO_STATE__ = '+JSON.stringify(state).replace(/</g, "\\u003c")+'</script>'
-    );
-    data = data.replace('</body>', scripts.join('') + '</body>');
-
-    return data;
-  };
-
-  // Load in our HTML file from our build
-  fs.readFile(
-    path.resolve(__dirname, '../build/index.html'),
-    'utf8',
-    async (err, htmlData) => {
-      // If there's an error... serve up something nasty
-      if (err) {
-        console.error('Read error', err);
-
-        return res.status(404).end();
-      }
-      const helmetContext = {};
-      const context = {};
-      const modules = [];
-      const routes = await App.getRoutes(client);
-      const Root = () => (
-        <HelmetProvider context={helmetContext}>
-          <ApolloProvider client={client}>
-            <Loadable.Capture report={m => modules.push(m)}>
-              <StaticRouter location={req.url} context={context}>
-                <Frontload isServer={true}>
-                  <App routes={routes}>
-                    <Helmet>
-                      <title>AMLI Residential</title>
-                    </Helmet>
-                  </App>
-                </Frontload>
-              </StaticRouter>
-            </Loadable.Capture>
-          </ApolloProvider>
-        </HelmetProvider>
-      )
-      /*
-        Here's the core funtionality of this file. We do the following in specific order (inside-out):
-          1. Load the <App /> component
-          2. Inside of the Frontload HOC
-          3. Inside of a Redux <StaticRouter /> (since we're on the server), given a location and context to write to
-          4. Inside of the store provider
-          5. Inside of the React Loadable HOC to make sure we have the right scripts depending on page
-          6. Render all of this sexiness
-          7. Make sure that when rendering Frontload knows to get all the appropriate preloaded requests
-
-        In English, we basically need to know what page we're dealing with, and then load all the appropriate scripts and
-        data for that page. We take all that information and compute the appropriate state to send to the user. This is
-        then loaded into the correct components and sent as a Promise to be handled below.
-      */
-      frontloadServerRender(() =>
-        renderToStringWithData(
-          <Root />
-        )
-      ).then(async routeMarkup => {
-        if (context.url) {
-
-          res.writeHead(302, {
-            Location: context.url
-          });
-
-          res.end();
-        } else {
-          // Otherwise, we carry on...
-
-          const initialApolloState = client.extract();
-          // Let's give ourself a function to load all our page-specific JS assets for code splitting
-          const extractAssets = (assets, chunks) =>
-            Object.keys(assets)
-              .filter(asset => chunks.indexOf(asset.replace('.js', '')) > -1)
-              .map(k => assets[k]);
-
-          // Let's format those assets into pretty <script> tags
-          const extraChunks = extractAssets(manifest, modules).map(
-            c => '<script type="text/javascript" src="/'+c.replace(/^\\//, '')+'"></script>'
-          );
-
-          // We need to tell Helmet to compute the right meta tags, title, and such
-          const { helmet } = helmetContext;
-
-          // NOTE: Disable if you desire
-          // Let's output the title, just to see SSR is working as intended
-          console.log('THE TITLE ------- >', helmet.title.toString());
-
-          // Pass all this nonsense into our HTML formatting function above
-          const html = injectHTML(htmlData, {
-            html: helmet.htmlAttributes.toString(),
-            title: helmet.title.toString(),
-            meta: helmet.meta.toString(),
-            body: routeMarkup,
-            scripts: extraChunks,
-            state: initialApolloState
-          });
-
-          // We have all the final HTML, let's send it to the user already!
-          res.send(html);
-        }
-      });
-    }
-  );
-};
-`);
-
-/* eslint-enable */
-
-/***/ }),
-/* 29 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* eslint-disable */
-
-/* harmony default export */ __webpack_exports__["default"] = (`// Express requirements
-import bodyParser from 'body-parser';
-import compression from 'compression';
-import express from 'express';
-import morgan from 'morgan';
-import path from 'path';
-// import forceDomain from 'forcedomain';
-import Loadable from 'react-loadable';
-import cookieParser from 'cookie-parser';
-
-// Our loader - this basically acts as the entry point for each page load
-import loader from './loader';
-
-// Create our express app using the port optionally specified
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// NOTE: UNCOMMENT THIS IF YOU WANT THIS FUNCTIONALITY
-/*
-  Forcing www and https redirects in production, totally optional.
-
-  http://mydomain.com
-  http://www.mydomain.com
-  https://mydomain.com
-
-  Resolve to: https://www.mydomain.com
-*/
-// if (process.env.NODE_ENV === 'production') {
-//   app.use(
-//     forceDomain({
-//       hostname: 'www.mydomain.com',
-//       protocol: 'https'
-//     })
-//   );
-// }
-
-// Compress, parse, log, and raid the cookie jar
-app.use(compression());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(morgan('dev'));
-app.use(cookieParser());
-
-app.disable('x-powered-by');
-
-// Set up homepage, static assets, and capture everything else
-app.use(express.Router().get('/', loader));
-app.use(express.static(path.resolve(__dirname, '../build')));
-app.use(loader);
-
-// We tell React Loadable to load all required assets and start listening - ROCK AND ROLL!
-Loadable.preloadAll().then(() => {
-  app.listen(PORT, console.log('App listening on port' + PORT + '!'));
-});
-
-// Handle the bugs somehow
-app.on('error', error => {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
-
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-});`);
-
-/* eslint-enable */
-
-/***/ }),
-/* 30 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(17);
@@ -1915,12 +1644,12 @@ const resolve = filename => path__WEBPACK_IMPORTED_MODULE_0___default.a.resolve(
 });
 
 /***/ }),
-/* 31 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(32);
+/* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(29);
 /* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(node_fetch__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
@@ -2102,20 +1831,20 @@ let ScriptWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_5__["Internal"
 /* harmony default export */ __webpack_exports__["default"] = (ScriptWriter);
 
 /***/ }),
-/* 32 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = require("node-fetch");
 
 /***/ }),
-/* 33 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var clean_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(34);
+/* harmony import */ var clean_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(31);
 /* harmony import */ var clean_css__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(clean_css__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(32);
+/* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(29);
 /* harmony import */ var node_fetch__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(node_fetch__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
@@ -2368,7 +2097,7 @@ let StyleWriter = (_dec = Object(_utils__WEBPACK_IMPORTED_MODULE_4__["Internal"]
 /* harmony default export */ __webpack_exports__["default"] = (StyleWriter);
 
 /***/ }),
-/* 34 */
+/* 31 */
 /***/ (function(module, exports) {
 
 module.exports = require("clean-css");

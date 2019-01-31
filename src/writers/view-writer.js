@@ -20,6 +20,7 @@ path.relative = (from, to) =>
 
 import {
   encapsulateCSS,
+  importantizeCSS,
   escape,
   freeLint,
   freeScope,
@@ -193,8 +194,9 @@ export default () => [
     $("style").each((i, el) => {
       const $el = $(el);
       const html = $el.html();
-      const css = encapsulateCSS(html, this.source);
 
+      let css = encapsulateCSS(html, this.source);
+      css = importantizeCSS(css);
       $el.html(css);
     });
 
