@@ -299,7 +299,7 @@ export default () => [
 
     // Wrapping with .af-view will apply encapsulated CSS
     const $body = $("body");
-    const $afContainer = $('<span class="af-view" style="width:100%;height:100%;"></span>');
+    const $afContainer = $('<div class="af-view"></div>');
 
     $afContainer.append($body.contents());
     $afContainer.prepend("\n  ");
@@ -331,32 +331,8 @@ export default () => [
     // Transforming HTML into JSX
     let jsx = htmltojsx.convert(removeHtmlFromLinks(html)).trim();
 
-    // DETECT LIST
-    children.forEach((child, index) => {
-      const isList = (new RegExp(`(<af-${child.elName} />\\s+){2,}`, "")).exec(jsx);
-      if (isList) {
-        this[_].sockets.push(`${camelize(child.className)}List${index}`)
-        jsx = jsx.replace(
-          new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""),
-          `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps(
-            ''
-          )}>{props.children ? props.children : null}</React.Fragment>)}`
-
-        );
-      } else {
-        jsx = jsx.replace(
-          new RegExp(`(<af-${child.elName} />\\s*)+`, !this[_].isComponent ? "g" : ""),
-          !this[_].isComponent ? `<${child.className}.Controller {...this.props}/>` :
-          `{map(proxies['${child.className}-${index}'], props => <${child.className}.Controller ${mergeProps(
-            ''
-          )}>{props.children ? props.children : null}</${child.className}.Controller>)}`
-
-        );
-      }
-    });
-
     // Bind controller to view
-    this[_].jsx = bindJSX(jsx, children);
+    this[_].jsx = bindJSX(this, jsx, children);
   }
 
   get scripts() {
@@ -654,12 +630,35 @@ function camelize(text) {
   }).replace(/\s+/g, '');
 }
 
-function bindJSX(jsx, children = []) {
-  children.forEach(child => {
-    jsx = jsx.replace(
-      new RegExp(`af-${child.elName}`, "g"),
-      `${child.className}.Controller`
-    );
+function bindJSX(self, jsx, children = []) {
+  // DETECT LIST
+  children.forEach((child, index) => {
+    const isList = (new RegExp(`(<af-${child.elName} />\\s+){2,}`, "")).exec(jsx);
+    if (isList) {
+      self[_].sockets.push(`${camelize(child.className)}List${index}`)
+      jsx = jsx.replace(
+        new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""),
+        `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps(
+          ''
+        )}>{props.children ? props.children : null}</React.Fragment>)}`
+
+      );
+    } else {
+
+      jsx = jsx.replace(
+        new RegExp(`af-${child.elName}`, "g"),
+        `${child.className}.Controller {...this.props}`
+      );
+
+      jsx = jsx.replace(
+        new RegExp(`(<af-${child.elName} />\\s*)+`, !self[_].isComponent ? "g" : ""),
+        !self[_].isComponent ? `<${child.className}.Controller {...this.props}/>` :
+        `{map(proxies['${child.className}'], props => <${child.className}.Controller ${mergeProps(
+          ''
+        )}>{props.children ? props.children : null}</${child.className}.Controller>)}`
+
+      );
+    }
   });
 
   // ORDER MATTERS
@@ -675,6 +674,7 @@ function bindJSX(jsx, children = []) {
             ? `{map(proxies['${sock}'], props => <${el} ${mergeProps(
                 attrs
               )}>{createScope(props.children, proxies => <React.Fragment>${bindJSX(
+                self,
                 children
               )}</React.Fragment>)}</${el}>)}`
             : `{map(proxies['${sock}'], props => <${el} ${mergeProps(
