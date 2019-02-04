@@ -299,7 +299,7 @@ export default () => [
 
     // Wrapping with .af-view will apply encapsulated CSS
     const $body = $("body");
-    const $afContainer = $('<div class="af-view"></div>');
+    const $afContainer = $('<span class="af-view" style="width:100%;height:100%;flex:1"></span>');
 
     $afContainer.append($body.contents());
     $afContainer.prepend("\n  ");
