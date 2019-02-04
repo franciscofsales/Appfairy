@@ -673,7 +673,9 @@ function bindJSX(self, jsx, children = []) {
           /<[\w_-]+-af-sock-[\w_-]+/.test(children)
             ? `{map(proxies['${sock}'], props => <${el} ${mergeProps(
                 attrs
-              )}>{createScope(props.children, proxies => <React.Fragment>${bindJSX(
+              )}>{createScope(props.children, proxies => <React.Fragment>
+                {props.render ? props.render() : null}
+                ${bindJSX(
                 self,
                 children
               )}</React.Fragment>)}</${el}>)}`

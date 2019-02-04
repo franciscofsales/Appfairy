@@ -1576,7 +1576,9 @@ function bindJSX(self, jsx, children = []) {
   // Open close
   .replace(/<([\w_-]+)-af-sock-([\w_-]+)(.*?)>([^]*)<\/\1-af-sock-\2>/g, (match, el, sock, attrs, children) =>
   // If there are nested sockets
-  /<[\w_-]+-af-sock-[\w_-]+/.test(children) ? `{map(proxies['${sock}'], props => <${el} ${mergeProps(attrs)}>{createScope(props.children, proxies => <React.Fragment>${bindJSX(self, children)}</React.Fragment>)}</${el}>)}` : `{map(proxies['${sock}'], props => <${el} ${mergeProps(attrs)}>{props.children ? props.children : <React.Fragment>${children}</React.Fragment>}</${el}>)}`)
+  /<[\w_-]+-af-sock-[\w_-]+/.test(children) ? `{map(proxies['${sock}'], props => <${el} ${mergeProps(attrs)}>{createScope(props.children, proxies => <React.Fragment>
+                {props.render ? props.render() : null}
+                ${bindJSX(self, children)}</React.Fragment>)}</${el}>)}` : `{map(proxies['${sock}'], props => <${el} ${mergeProps(attrs)}>{props.children ? props.children : <React.Fragment>${children}</React.Fragment>}</${el}>)}`)
   // Self closing
   .replace(/<([\w_-]+)-af-sock-([\w_-]+)(.*?) \/>/g, (match, el, sock, attrs) => `{map(proxies['${sock}'], props => <${el} ${mergeProps(attrs)}>{props.children}</${el}>)}`);
 }
