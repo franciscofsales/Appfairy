@@ -674,7 +674,7 @@ function bindJSX(self, jsx, children = []) {
             ? `{map(proxies['${sock}'], props => <${el} ${mergeProps(
                 attrs
               )}>{createScope(props.children, proxies => <React.Fragment>
-                {props.render ? props.render() : null}
+                {props.topelement ? props.topelement() : null}
                 ${bindJSX(
                 self,
                 children
