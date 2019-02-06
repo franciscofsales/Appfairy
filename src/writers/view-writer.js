@@ -33,15 +33,15 @@ import {
 const _ = Symbol("_ViewWriter");
 const htmltojsx = new HTMLtoJSX({ createClass: false });
 
-const flattenChildren = (children = [], flatten = []) => {
-  children.forEach(child => {
-    flattenChildren(child[_].children, flatten);
-  });
+// const flattenChildren = (children = [], flatten = []) => {
+//   children.forEach(child => {
+//     flattenChildren(child[_].children, flatten);
+//   });
 
-  flatten.push(...children);
+//   flatten.push(...children);
 
-  return flatten;
-};
+//   return flatten;
+// };
 
 const adjustImagesToRoot = (html) => html.replace(/src="/ig, 'src="/');
 const removeHtmlFromLinks = (html) => adjustImagesToRoot(html.replace('index.html', '').replace(/\.html/ig, '').replace(/href="/ig, 'href="/'))
@@ -91,7 +91,7 @@ export default () => [
       .join("\n");
 
     const leanViewWriters = []
-    viewWriters = flattenChildren(viewWriters);
+    // viewWriters = flattenChildren(viewWriters);
 
     for(const viewWriter of viewWriters) {
       if(!leanViewWriters.find(vw => vw.className === viewWriter.className)) {

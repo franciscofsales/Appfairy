@@ -993,15 +993,15 @@ path__WEBPACK_IMPORTED_MODULE_2___default.a.relative = (from, to) => orPathRel(f
 const _ = Symbol("_ViewWriter");
 const htmltojsx = new htmltojsx__WEBPACK_IMPORTED_MODULE_1___default.a({ createClass: false });
 
-const flattenChildren = (children = [], flatten = []) => {
-  children.forEach(child => {
-    flattenChildren(child[_].children, flatten);
-  });
+// const flattenChildren = (children = [], flatten = []) => {
+//   children.forEach(child => {
+//     flattenChildren(child[_].children, flatten);
+//   });
 
-  flatten.push(...children);
+//   flatten.push(...children);
 
-  return flatten;
-};
+//   return flatten;
+// };
 
 const adjustImagesToRoot = html => html.replace(/src="/ig, 'src="/');
 const removeHtmlFromLinks = html => adjustImagesToRoot(html.replace('index.html', '').replace(/\.html/ig, '').replace(/href="/ig, 'href="/'));
@@ -1045,7 +1045,7 @@ export default () => [
       }).join("\n");
 
       const leanViewWriters = [];
-      viewWriters = flattenChildren(viewWriters);
+      // viewWriters = flattenChildren(viewWriters);
 
       for (const viewWriter of viewWriters) {
         if (!leanViewWriters.find(function (vw) {
