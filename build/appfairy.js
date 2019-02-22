@@ -1145,7 +1145,7 @@ export default () => [
       const html = $el.html();
 
       let css = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["encapsulateCSS"])(html, this.source);
-      css = Object(_utils__WEBPACK_IMPORTED_MODULE_8__["importantizeCSS"])(css);
+      // css = importantizeCSS(css);
       $el.html(css);
     });
 
