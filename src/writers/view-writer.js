@@ -633,11 +633,11 @@ function camelize(text) {
 function bindJSX(self, jsx, children = []) {
   // DETECT LIST
   children.forEach((child, index) => {
-    const isList = (new RegExp(`(<af-${child.elName} />\\s+){2,}`, "")).exec(jsx);
+    const isList = (new RegExp(`(<af-${child.elName} />\\s*){2,}`, "")).exec(jsx);
     if (isList) {
       self[_].sockets.push(`${camelize(child.className)}List${index}`)
       jsx = jsx.replace(
-        new RegExp(`(<af-${child.elName} />\\s+){2,}`, ""),
+        new RegExp(`(<af-${child.elName} />\\s*){2,}`, ""),
         `{map(proxies['${camelize(child.className)}List${index}'], props => <React.Fragment ${mergeProps(
           ''
         )}>{props.children ? props.children : null}</React.Fragment>)}`
