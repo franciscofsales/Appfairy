@@ -1,6 +1,6 @@
 {
   "name": "appfairy",
-  "version": "0.8.25",
+  "version": "0.8.27",
   "description": "A CLI tool to Migrate a Webflow project into a React app",
   "main": "build/appfairy.js",
   "bin": {
@@ -16,7 +16,7 @@
     "execa": "^0.11.0",
     "find-root": "^1.1.0",
     "fs-extra": "^7.0.0",
-    "htmltojsx": "^0.3.0",
+    "htmltojsx": "https://github.com/franciscofsales/react-magic",
     "minimist": "^1.2.0",
     "node-fetch": "^2.1.2",
     "recursive-readdir": "^2.2.2",
